@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GREEN FILE 녹색의 증언</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* 레이아웃: 상단 상태바 + 장면 영역 + 하단 대화창. 조사 모드는 3열(장소/자료/수첩), 청문회는 증인석/증언/조사관석 */
+:root{
+  --bg:#0b111b;
+  --panel:#131c29;
+  --panel2:#1a2636;
+  --line:#2a3a4f;
+  --ink:#e4ebe8;
+  --muted:#8796a5;
+  --teal:#38c3a6;
+  --teal-dim:#16443c;
+  --paper:#dcdfd8;
+  --paper-ink:#1b232c;
+  --warn:#f0893a;
+  --red:#e5484d;
+  --gold:#d6b26a;
+  --display:"Noto Serif KR", serif;
+  --body:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;overflow:hidden}
+button{font-family:inherit;cursor:pointer;color:inherit}
+button:focus-visible,[tabindex]:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+#app{height:100%;display:grid;grid-template-rows:auto 1fr auto}
+.top{display:flex;align-items:center;gap:14px;padding:10px 18px;border-bottom:1px solid var(--line);background:#0e1622;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:900;letter-spacing:.06em;font-size:15px}
+.brand b{color:var(--teal)}
+.chap{font-size:12.5px;color:var(--muted)}
+.spacer{flex:1}
+.stat{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.stat strong{color:var(--ink);font-family:var(--mono);font-size:14px}
+.meter{width:110px;height:8px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--teal);transition:width .4s}
+.meter.low span{background:var(--red)}
+.tbtn{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:5px 11px;font-size:13px;font-weight:600}
+.tbtn:hover{border-color:var(--teal)}
+.tbtn .n{font-family:var(--mono);color:var(--teal);margin-left:4px}
+main{overflow:auto;position:relative}
+.scene{max-width:1180px;margin:0 auto;padding:18px;min-height:100%}
+
+/* 타이틀 */
+.title{min-height:100%;display:flex;flex-direction:column;justify-content:center;gap:22px;max-width:760px;margin:0 auto;padding:40px 20px}
+.title .file{font-family:var(--mono);color:var(--teal);font-size:13px;letter-spacing:.2em}
+.title h1{font-family:var(--display);font-weight:900;font-size:clamp(40px,8vw,76px);line-height:1.05;margin:0}
+.title h1 small{display:block;font-size:.42em;color:var(--muted);font-weight:700;margin-top:10px;letter-spacing:.02em}
+.title blockquote{margin:0;border-left:3px solid var(--teal);padding-left:16px;font-family:var(--display);font-size:19px;line-height:1.7}
+.title p{color:var(--muted);max-width:60ch;margin:0}
+.primary{background:var(--teal);color:#06231d;border:none;border-radius:8px;padding:12px 22px;font-weight:700;font-size:16px;width:max-content}
+.primary:hover{filter:brightness(1.1)}
+.primary:disabled{opacity:.4;cursor:default;filter:none}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:600}
+.ghost:hover{border-color:var(--teal)}
+
+/* 조사 모드 */
+.inv{display:grid;grid-template-columns:210px 1fr 300px;gap:16px;align-items:start}
+@media (max-width:980px){.inv{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:10px}
+.h{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.06em}
+.loc{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.loc small{color:var(--muted);font-size:12px}
+.loc.on{border-color:var(--teal);background:var(--teal-dim)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.doc{background:var(--paper);color:var(--paper-ink);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:8px;position:relative;box-shadow:0 2px 0 rgba(0,0,0,.35);min-height:150px}
+.doc .ty{font-size:11px;font-weight:700;letter-spacing:.08em;color:#4c5966}
+.doc h4{margin:0;font-size:15px;line-height:1.4}
+.doc p{margin:0;font-size:13px;color:#3d4955}
+.doc .act{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.doc .cost{font-family:var(--mono);font-size:12px;color:#4c5966}
+.doc button{background:var(--paper-ink);color:var(--paper);border:none;border-radius:5px;padding:6px 12px;font-size:13px;font-weight:700}
+.doc button:disabled{opacity:.35;cursor:default}
+.doc.got{opacity:.62}
+.doc.got::after{content:"확보";position:absolute;top:10px;right:10px;font-family:var(--display);font-weight:900;color:#1d6b58;border:2px solid #1d6b58;border-radius:4px;padding:0 6px;transform:rotate(8deg);font-size:13px}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.tabs{display:flex;gap:4px}
+.tabs button{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:5px;font-size:12.5px;font-weight:600}
+.tabs button.on{border-color:var(--teal);color:var(--teal)}
+.sus{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.sus:last-child{border-bottom:none}
+.pill{font-size:11px;font-weight:700;border-radius:999px;padding:0 8px;width:max-content}
+.pill.none{background:#2b2f36;color:var(--muted)}
+.pill.some{background:#3d2b17;color:var(--warn)}
+.pill.done{background:var(--teal-dim);color:var(--teal)}
+.tl{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.tl div{display:grid;grid-template-columns:78px 1fr;gap:6px}
+.tl span:first-child{font-family:var(--mono);color:var(--muted);font-size:12px}
+.tl .hot span:last-child{color:var(--warn)}
+.say{font-size:13px;border-left:2px solid var(--line);padding-left:8px}
+.say b{display:block;font-size:12px;color:var(--muted)}
+.brief{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
+.brief p{margin:0;font-size:14px}
+
+/* 포트레이트 */
+.por{flex:none}
+.por svg{display:block}
+
+/* 대화창 */
+.dlg{border-top:1px solid var(--line);background:#0e1622;min-height:0}
+.dlg-in{max-width:1180px;margin:0 auto;padding:12px 18px;display:flex;gap:14px;align-items:flex-start}
+.dlg .who{font-weight:700;font-size:13px}
+.dlg .who small{color:var(--muted);font-weight:500;margin-left:6px}
+.dlg .txt{font-size:16px;line-height:1.65;max-width:75ch}
+.dlg .txt.narr{color:var(--muted);font-style:italic}
+.dlg .body{flex:1;display:flex;flex-direction:column;gap:4px}
+.dlg .nx{align-self:flex-end;background:var(--teal);color:#06231d;border:none;border-radius:6px;padding:8px 16px;font-weight:700}
+.dlg.hidden{display:none}
+
+/* 청문회 */
+.hear{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start}
+@media (max-width:860px){.hear{grid-template-columns:1fr}}
+.stand{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.stand .nm{font-weight:700}
+.stand .rl{font-size:12px;color:var(--muted)}
+.claims{width:100%;display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.claim{display:flex;justify-content:space-between;gap:6px;font-size:12px;text-align:left;border:1px solid var(--line);border-radius:5px;padding:5px 7px}
+.claim .sh{font-family:var(--mono);color:var(--warn)}
+.claim.broken{border-color:var(--teal);color:var(--teal);text-decoration:line-through}
+.testi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.testi h3{margin:0;font-family:var(--display);font-size:20px}
+.testi .sub{font-size:13px;color:var(--muted);margin:0}
+.stmt{font-family:var(--display);font-size:clamp(17px,2.2vw,21px);line-height:1.75;display:flex;gap:10px}
+.stmt .no{font-family:var(--mono);font-size:13px;color:var(--muted);padding-top:5px;min-width:22px}
+.ph{border:none;background:none;padding:0 2px;font:inherit;color:var(--ink);border-bottom:2px dashed var(--teal);cursor:pointer;line-height:inherit;text-align:left}
+.ph:hover{background:var(--teal-dim)}
+.ph.sel{background:var(--teal);color:#06231d;border-bottom-color:transparent;border-radius:3px}
+.ph.dead{border-bottom:2px solid var(--teal);color:var(--muted);text-decoration:line-through;cursor:default}
+.ph.shield{border-bottom-color:var(--warn)}
+.def{font-size:14px;color:var(--warn);border-left:3px solid var(--warn);padding:4px 10px;background:rgba(240,137,58,.08)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:14px}
+.bar .hint{font-size:13px;color:var(--muted);flex:1;min-width:200px}
+.act-btn{border:2px solid var(--teal);background:transparent;color:var(--teal);border-radius:8px;padding:9px 16px;font-weight:700}
+.act-btn:hover:not(:disabled){background:var(--teal);color:#06231d}
+.act-btn.q{border-color:var(--gold);color:var(--gold)}
+.act-btn.q:hover:not(:disabled){background:var(--gold);color:#241b06}
+.act-btn:disabled{opacity:.35;cursor:default}
+
+/* 모달(증거 파일 / 질문) */
+.modal{position:fixed;inset:0;background:rgba(4,8,14,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:12px;width:min(980px,100%);max-height:92%;display:flex;flex-direction:column;overflow:hidden}
+.sheet header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.sheet header h3{margin:0;font-size:16px;flex:1}
+.sheet .x{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 10px}
+.ev{display:grid;grid-template-columns:270px 1fr;min-height:0;flex:1}
+@media (max-width:720px){.ev{grid-template-columns:1fr}}
+.evlist{overflow:auto;border-right:1px solid var(--line);padding:8px;display:flex;flex-direction:column;gap:6px;max-height:70vh}
+.evi{text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.evi.on{border-color:var(--teal)}
+.evi small{color:var(--muted);font-size:11.5px}
+.evi .t{font-size:13.5px;font-weight:600;line-height:1.35}
+.evd{overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px;max-height:70vh}
+.paper{background:var(--paper);color:var(--paper-ink);border-radius:4px;padding:16px;font-size:14.5px;line-height:1.7}
+.paper .ty{font-size:11px;font-weight:700;letter-spacing:.08em;color:#4c5966}
+.paper h4{margin:4px 0 8px;font-size:17px}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12.5px}
+@media (max-width:720px){.meta{grid-template-columns:1fr 1fr}}
+.meta div{background:var(--panel2);border-radius:6px;padding:6px 8px}
+.meta b{display:block;color:var(--muted);font-weight:600;font-size:11px}
+.lim{border:1px dashed var(--warn);border-radius:8px;padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:6px}
+.lim .k{font-size:12px;color:var(--warn);font-weight:700}
+.fact{border:1px solid var(--teal-dim);background:rgba(56,195,166,.06);border-radius:8px;padding:10px 12px;font-size:14px}
+.fact .k{font-size:12px;color:var(--teal);font-weight:700;display:block}
+.evd .go{display:flex;gap:8px;flex-wrap:wrap}
+.qlist{padding:12px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.qbtn{text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14.5px}
+.qbtn:hover:not(:disabled){border-color:var(--gold)}
+.qbtn:disabled{opacity:.4;cursor:default}
+
+/* 포렌식 */
+.foren{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+@media (max-width:900px){.foren{grid-template-columns:1fr}}
+.chart{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.chart svg{width:100%;height:auto;display:block}
+.readout{display:flex;gap:16px;flex-wrap:wrap;align-items:baseline}
+.readout .big{font-family:var(--mono);font-size:30px;font-weight:600;color:var(--teal)}
+.steps{display:flex;flex-direction:column;gap:10px}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.step.cur{border-color:var(--teal)}
+.step.ok{opacity:.6}
+.step .k{font-size:12px;color:var(--muted);font-weight:700}
+.step input{background:var(--bg);border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:7px 10px;font-family:var(--mono);font-size:15px;width:90px}
+.tries{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
+.tries i{width:12px;height:12px;border-radius:50%;background:var(--teal);display:inline-block}
+.tries i.x{background:var(--red)}
+.foot{font-size:12.5px;color:var(--muted)}
+.dtable{font-size:12.5px;border-collapse:collapse;width:100%;font-family:var(--mono)}
+.dtable td,.dtable th{border-bottom:1px solid var(--line);padding:3px 6px;text-align:right}
+.dtable th{color:var(--muted);font-weight:500}
+
+/* 라운드 4/5 */
+.round{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.round h3{margin:0;font-family:var(--display);font-size:20px}
+.opt{text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:15px;line-height:1.6;display:flex;gap:10px}
+.opt:hover:not(:disabled){border-color:var(--teal)}
+.opt:disabled{opacity:.4;cursor:default}
+.opt .l{font-family:var(--mono);color:var(--teal);font-weight:600}
+.opt.lock{border-style:dashed}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:860px){.slots{grid-template-columns:1fr}}
+.slot{display:flex;flex-direction:column;gap:6px}
+.slot .k{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em}
+.slot .opt{font-size:13.5px;padding:9px 10px}
+.slot .opt.on{border-color:var(--teal);background:var(--teal-dim)}
+.slot .opt.badpick{border-color:var(--red)}
+
+/* 결과 */
+.res{display:flex;flex-direction:column;gap:18px;max-width:900px;margin:0 auto}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:720px){.grades{grid-template-columns:1fr 1fr}}
+.grade{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:2px}
+.grade .g{font-family:var(--display);font-size:34px;font-weight:900;color:var(--teal);line-height:1.1}
+.grade .g.c{color:var(--warn)}
+.grade small{color:var(--muted);font-size:12px}
+.grade .lb{font-weight:700;font-size:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.card h3{margin:0;font-size:16px}
+.card p{margin:0;max-width:70ch}
+.card ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.ending{border-left:4px solid var(--teal)}
+.ending.bad{border-left-color:var(--warn)}
+.ending .k{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.1em}
+.ending h2{margin:0;font-family:var(--display);font-size:26px}
+
+/* 연출 */
+.stamp{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:30}
+.stamp div{font-family:var(--display);font-weight:900;font-size:clamp(46px,10vw,110px);border:6px solid currentColor;padding:4px 30px;transform:rotate(-6deg);background:rgba(11,17,27,.85);animation:st .9s ease-out forwards}
+.stamp.good div{color:var(--teal)}
+.stamp.bad div{color:var(--red)}
+.stamp.soft div{color:var(--warn);font-size:clamp(34px,7vw,70px)}
+@keyframes st{0%{transform:rotate(-6deg) scale(1.8);opacity:0}25%{transform:rotate(-6deg) scale(1);opacity:1}80%{opacity:1}100%{opacity:0}}
+.shake{animation:sh .35s}
+@keyframes sh{0%,100%{transform:none}25%{transform:translateX(-8px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}
+@media (prefers-reduced-motion: reduce){.stamp div,.shake{animation:none!important}.stamp div{opacity:1}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top" id="top"></div>
+  <main id="main"><div class="scene" id="scene"></div></main>
+  <div class="dlg hidden" id="dlg" aria-live="polite"></div>
+</div>
+<div id="modal"></div>
+<div id="fx"></div>
+
+<script>
+/* =========================================================
+   DATA — 증거, 증언, 판정표 (이후 챕터는 이 구조로 확장)
+   ========================================================= */
+const CH = {
+  han:{name:"한서윤", role:"특별감사팀 책임자", c:"#38c3a6", hair:"bob"},
+  kang:{name:"강도윤", role:"태림그룹 지속가능경영본부장", c:"#6f97cf", hair:"side"},
+  yoon:{name:"윤하진", role:"태림그룹 환경데이터분석 책임자", c:"#c9a96e", hair:"long", glasses:true},
+  chair:{name:"오경민", role:"특별청문회 위원장", c:"#9aa5ad", hair:"grey"},
+  me:{name:"조사관(나)", role:"특별감사팀", c:"#e4ebe8"},
+  nar:{name:"", role:""}
+};
+
+const EV = {
+  E1:{title:"2025 지속가능경영보고서 p.12", type:"문서", src:"태림그룹 지속가능경영보고서", date:"2026.06 발간", author:"태림그룹 지속가능경영본부", rel:"높음",
+      quote:"“해온 산업단지의 직접 배출량(Scope 1) 및 구매 전력에 따른 간접 배출량(Scope 2)은 기준연도(2022년) 대비 40% 감소했다.”",
+      fact:"해온 산업단지 한 곳의 Scope 1·2 배출량이 2022년 대비 40% 줄었다고 보고했다.",
+      limit:"그룹 전체 배출량은 다루지 않는다. 기준연도를 왜 2022년으로 정했는지도 적혀 있지 않다."},
+  E2:{title:"한결인증원 검증의견서", type:"문서", src:"외부 검증기관 한결인증원", date:"2026.05", author:"한결인증원 검증팀", rel:"높음",
+      quote:"“본 검증은 보고서에 명시된 대상 사업장(해온 산업단지)의 지정 배출 범위(Scope 1·2) 및 제출된 자료를 대상으로 하며, 제한적 보증 수준에서 수행되었다.”",
+      fact:"보고서의 40% 수치는 제출 자료와 일치한다는 검증을 받았다.",
+      limit:"검증 대상은 해온 산업단지의 Scope 1·2뿐이다. 그룹 전체 수치나 홍보물 문구는 검증하지 않았다. 기준연도가 적절한지 판단한 것도 아니다."},
+  E3:{title:"그룹 홍보 영상 자막 (00:42)", type:"문서", src:"태림그룹 공식 채널 홍보 영상", date:"2026.07", author:"태림그룹 커뮤니케이션실", rel:"높음 (게시 사실 확인)",
+      quote:"“태림그룹, 기업 전체 탄소배출량 40% 감축 달성!”",
+      fact:"회사는 40%를 ‘기업 전체’의 성과로 홍보했다.",
+      limit:"배출량 자체에 대한 정보는 없다. 누가 이 문구를 승인했는지도 알 수 없다."},
+  E4r:{title:"해온 산단 연도별 배출량 원자료", type:"수치", src:"태림 기록보관실 내부 자료", date:"2019–2025", author:"환경데이터분석팀", rel:"높음",
+      quote:"2019 69.0 · 2020 66.5 · 2021 71.0 · 2022 100.0 · 2023 88.0 · 2024 74.0 · 2025 60.0 (단위: 천 tCO₂eq)",
+      fact:"연도별 배출량 숫자가 있다. 2022년 값이 유독 높다.",
+      limit:"분석을 마치지 못해서, 2022년이 기준연도로 왜 문제인지 설명할 수 없다."},
+  E4a:{title:"기준연도 분석 메모 (직접 작성)", type:"수치", src:"원자료 재계산 · 조사관 작성", date:"청문회 D-7 이후", author:"조사관(나)", rel:"높음 (원자료 기반 계산)",
+      quote:"40%는 2022년을 기준으로 해야만 나오는 수치다. 2022년은 2공장 시운전과 노후 LNG 보일러 병행 가동으로 배출량이 일시적으로 급증한 해다. 직전 보고서의 기준연도(2019년)로 계산하면 감축률은 13%다.",
+      fact:"40%는 이례적으로 높았던 해를 기준으로 삼아 감축 폭이 커 보이는 수치다.",
+      limit:"기준연도를 바꾼 사람과 의도는 이 메모로 알 수 없다. 기준연도 재설정 자체가 금지된 것도 아니다."},
+  E5:{title:"2024 지속가능경영보고서 p.10", type:"문서", src:"태림그룹 직전 연도 보고서", date:"2025.06 발간", author:"태림그룹 지속가능경영본부", rel:"높음",
+      quote:"“해온 산업단지 Scope 1·2 배출량은 기준연도(2019년) 대비 7.2% 증가했다. 이는 2공장 증설에 따른 것이다.”",
+      fact:"1년 전 보고서는 기준연도가 2019년이었고, 그때는 배출량이 ‘증가’로 보고됐다.",
+      limit:"기준연도가 바뀌었다는 사실만 보여 준다. 사업장 확장 같은 구조적 변화가 있으면 기준연도를 다시 정하는 것은 국제 지침도 허용한다."},
+  E6:{title:"2025 전력 조달 내역", type:"수치", src:"태림 기록보관실 · 에너지팀 정산서", date:"2026.02", author:"태림그룹 에너지팀", rel:"높음",
+      quote:"해온 산단 전력 사용량 기준: 자가 태양광 21% · 재생에너지 직접구매계약(PPA) 10% · 재생에너지 공급인증서(REC) 구매 69%",
+      fact:"‘100% 재생에너지’ 중 69%는 인증서 구매로 채운 것이다.",
+      limit:"REC 구매는 RE100 등 국제 이니셔티브가 인정하는 조달 방식이다. 이것만으로 위법이나 허위라고 할 수 없다."},
+  E7:{title:"한전 수전 검침 기록", type:"수치", src:"해온 산업단지 변전소 검침 데이터", date:"2025.01–12", author:"한국전력 해온지사", rel:"높음",
+      quote:"산단 수전량의 79%가 일반 전력망(계통)에서 공급됨. 야간(18시–07시) 가동 시간대에는 공급량의 100%가 계통 전력.",
+      fact:"산단이 실제로 쓰는 전기의 대부분은 화력 발전이 섞인 일반 전력망에서 온다.",
+      limit:"인증서로 사용량을 상쇄한 것은 별개 문제다. 이 기록은 물리적 공급 경로만 보여 준다."},
+  E8:{title:"정부 온실가스 배출량 명세서 (그룹 전체)", type:"수치", src:"온실가스 종합정보센터 공개 명세서", date:"2026.05 공개", author:"정부 공시 (기업 제출)", rel:"높음",
+      quote:"태림그룹 전 사업장 Scope 1·2 합계: 2022년 1,840천 t → 2025년 1,730천 t (6.0% 감소)",
+      fact:"그룹 전체 배출량은 같은 기간 6% 줄었다.",
+      limit:"해온 산단의 40% 감축이 틀렸다는 뜻은 아니다. 그룹 전체와 산단은 범위가 다르다."},
+  E9:{title:"윤하진 면담 진술", type:"증언", src:"해온 산업단지 면담", date:"청문회 D-5", author:"윤하진 (환경데이터분석 책임자)", rel:"중간 (본인 기억)",
+      quote:"“저희 팀은 해온 산단의 Scope 1·2만 집계해서 본부에 넘겼어요. 그룹 전체 40%라는 숫자는 만든 적이 없습니다. 기준연도를 2022년으로 바꾼 건 본부 요청이었고요.”",
+      fact:"데이터팀이 만든 수치는 산단 범위뿐이었다. 기준연도 변경은 본부가 요청했다.",
+      limit:"본부가 왜 바꿨는지, 홍보 문구가 어떤 경로로 만들어졌는지는 그녀도 모른다."},
+  E10:{title:"방류수 수질 측정 기록", type:"수치", src:"해온 산업단지 폐수처리장", date:"2026.07–10", author:"폐수처리 운영사", rel:"중간",
+      quote:"총유기탄소(TOC) 월평균: 7월 12.1 · 8월 13.4 · 9월 14.8 mg/L (기준 25 이내). 사고 당일(10.12) 02:00–09:00 측정값 결측.",
+      fact:"사고 당일 아침 7시간의 수질 기록이 비어 있다.",
+      limit:"이번 청문회의 의제인 탄소 배출 주장과는 직접 관련이 없다. 결측 원인도 아직 모른다."},
+  E11:{title:"해온시 보도자료", type:"문서", src:"해온시청 정책협력관실", date:"2026.10.14", author:"해온시 (서정우 정책협력관)", rel:"낮음 (2차 인용)",
+      quote:"“정기 점검 결과, 해온 탄소중립 프로젝트의 환경 목표는 정상적으로 달성되고 있다. 산단 배출량은 40% 감소했다.”",
+      fact:"해온시는 기업 보고서 수치를 그대로 인용했다.",
+      limit:"시가 독자적으로 측정한 값이 아니다. 같은 보고서를 다시 말한 것일 뿐이다."},
+  Qg:{title:"강도윤 답변: 그룹 전체 감축률", type:"증언", src:"청문회 추가 질문", date:"청문회 당일", author:"강도윤", rel:"중간 (증인 진술)",
+      quote:"“그룹 전체는 정부 명세서로 따로 공시합니다. 감축률은… 한 자릿수입니다.”",
+      fact:"증인 스스로 그룹 전체 감축률이 한 자릿수라고 인정했다.",
+      limit:"정확한 수치는 명세서 원문으로 확인해야 한다."},
+  Qw:{title:"강도윤 답변: 실제 전력 공급", type:"증언", src:"청문회 추가 질문", date:"청문회 당일", author:"강도윤", rel:"중간 (증인 진술)",
+      quote:"“물리적으로는 계통 전력을 함께 씁니다. 사용량만큼 인증서를 사서 상쇄하는 겁니다.”",
+      fact:"증인 스스로 산단이 계통 전력을 쓴다고 인정했다.",
+      limit:"계통 전력 비중이 얼마인지는 검침 기록이 있어야 알 수 있다."}
+};
+const EVTYPE_ORDER = ["문서","수치","증언","정황"];
+
+const LOCS = [
+  {id:"office", name:"감사팀 사무실", sub:"공시 자료 · 언론 자료", items:[
+    {ev:"E8", cost:1, label:"정부 공시 시스템에서 그룹 명세서 조회", blurb:"태림그룹이 정부에 제출한 전 사업장 배출량을 조회한다."},
+    {ev:"E11", cost:1, label:"해온시 보도자료 검토", blurb:"사고 이틀 뒤 해온시가 낸 공식 입장문."}
+  ]},
+  {id:"archive", name:"태림 기록보관실", sub:"내부 자료 열람 허가", items:[
+    {ev:"E4", cost:2, label:"배출량 원자료 분석", blurb:"해온 산단의 연도별 배출량 원자료와 각주. 직접 분석해야 한다.", forensic:true},
+    {ev:"E5", cost:1, label:"직전 연도 보고서 대조", blurb:"1년 전 발간된 지속가능경영보고서."},
+    {ev:"E6", cost:1, label:"전력 조달 정산서 열람", blurb:"‘100% 재생에너지’를 어떻게 조달했는지 적힌 정산서."}
+  ]},
+  {id:"site", name:"해온 산업단지", sub:"현장 · 관계자 면담", items:[
+    {ev:"E7", cost:1, label:"변전소 검침 기록 확보", blurb:"산단으로 들어오는 전기가 어디서 오는지 보여 주는 기록."},
+    {ev:"E9", cost:1, label:"윤하진 면담", blurb:"보고서의 원자료를 만든 데이터 책임자.", interview:true},
+    {ev:"E10", cost:1, label:"폐수처리장 수질 기록 확보", blurb:"사고가 난 시설의 최근 측정값."}
+  ]}
+];
+
+const SUSPECTS = [
+  {q:"40% 감축은 그룹 전체의 성과인가?", need:["E8","E9"], base:["E1","E3"]},
+  {q:"기준연도 2022년은 적절한가?", need:["E4a"], base:["E5","E4r"]},
+  {q:"외부 검증은 무엇을 검증했나?", need:["E2"], base:[]},
+  {q:"‘100% 재생에너지’는 실제 전력 공급을 뜻하나?", need:["E7"], base:["E6"]}
+];
+
+/* 증언 — 문장은 조각 배열, 객체 조각이 지적 가능한 구절 */
+const TESTI = {
+  T1:{title:"증언 1 · 탄소 감축 성과", sub:"검증이 필요한 구절을 고르고 증거를 제시하세요. 목표: ‘40% 감축’과 ‘검증’ 주장의 허점을 드러내기",
+    lines:[
+      ["태림그룹은 ",{id:"p_group",t:"태림그룹은"}," ",{id:"p_base",t:"기준 연도 대비"}," 탄소배출량을 ",{id:"p_40",t:"40% 줄였습니다"},"."],
+      ["이 수치는 ",{id:"p_ver",t:"외부 전문기관의 검증을 거쳤습니다"},"."],
+      ["따라서 당사는 환경 성과를 ",{id:"p_acc",t:"정확하게 공개했습니다"},"."]
+    ]},
+  T2:{title:"증언 2 · 재생에너지 100%", sub:"증인이 진술을 바꿨습니다. 목표: ‘100% 재생에너지’ 주장의 허점을 드러내기",
+    lines:[
+      ["해온 산업단지는 ",{id:"p_re",t:"100% 재생에너지로 가동되고"}," 있습니다."],
+      ["부족한 부분은 인증서로 보완했으며, ",{id:"p_rec",t:"이는 국제 기준에서도 인정되는 방식"},"입니다."],
+      ["그러므로 ‘100% 재생에너지 산단’이라는 ",{id:"p_expr",t:"표현에는 문제가 없습니다"},"."]
+    ]}
+};
+// 구절이 지키는 쟁점(오답 시 방어가 강화되는 쟁점)
+const GUARD = {p_group:"C1",p_base:"C2",p_40:"C2",p_ver:"C3",p_acc:"C3",p_re:"C4",p_rec:"C4",p_expr:"C4"};
+const CLAIMS = {
+  C1:{t:"그룹 전체 40%", stage:"T1"},
+  C2:{t:"기준연도 대비", stage:"T1", opt:true},
+  C3:{t:"외부 검증", stage:"T1"},
+  C4:{t:"100% 재생에너지", stage:"T2"}
+};
+const STR = {direct:3, scope:2, weak:1};
+const GLABEL = {direct:"직접 모순", scope:"범위 과장 지적", weak:"의문 제기에 그침", irrelevant:"관련 없는 증거", confirm:"증인 주장을 뒷받침함", misfire:"사실인 진술을 공격함", premature:"전제를 먼저 무너뜨려야 함"};
+
+/* 판정표: [등급, 쟁점, 해설, 증인 대사, 표정] */
+const JUDGE = {
+  p_group:{
+    E8:["direct","C1","정부 명세서는 같은 기간 그룹 전체 배출량이 6% 줄었다고 보여 준다. ‘태림그룹이 40% 줄였다’는 말과 정면으로 어긋난다.","…정부 명세서 기준으로 그룹 전체는 6%입니다. 제가 말씀드린 40%는 해온 산업단지 기준이었습니다.","pressed"],
+    Qg:["scope","C1","증인 스스로 그룹 전체는 한 자릿수라고 답했다. 40%는 그룹 전체의 숫자가 아니다.","…말씀드린 대로 그룹 전체는 한 자릿수입니다. 40%는 산단 기준입니다.","pressed"],
+    E1:["scope","C1","보고서가 40%라고 적은 대상은 ‘해온 산업단지’ 한 곳이다. 증인은 주어를 ‘태림그룹’으로 바꿔 말했다.","보고서의 대상이 해온 산업단지인 것은 맞습니다. 그룹을 대표하는 사업장이라 그렇게 표현했을 뿐입니다.","evasive"],
+    E9:["scope","C1","원자료를 만든 데이터팀은 산단 범위만 집계했다고 진술했다. 그룹 전체 40%의 출처가 없다.","데이터팀이 산단 수치를 만든 건 맞습니다. 그룹 표현은… 본부 차원에서 정리한 겁니다.","pressed"],
+    E2:["scope","C1","검증 대상은 해온 산업단지의 Scope 1·2로 한정돼 있다. ‘태림그룹’ 전체가 검증받은 것이 아니다.","검증 범위가 산단이었던 것은 사실입니다. 그 점은 보고서에도 적혀 있습니다.","evasive"],
+    E3:["confirm","C1","홍보 자막은 증인의 말을 되풀이할 뿐이다. 반박이 아니라 같은 주장을 하나 더 보탠 셈이다.","보십시오. 저희는 대외적으로도 일관되게 말씀드려 왔습니다.","smile"]
+  },
+  p_base:{
+    E4a:["direct","C2","40%는 일시적 급증이 있었던 2022년을 기준으로 해야만 나온다. 직전 보고서의 기준연도인 2019년으로 계산하면 13%에 그친다.","…기준연도 재설정은 산단 확장을 반영하려던 것입니다. 2019년 기준이라면… 말씀하신 수치가 맞습니다.","pressed"],
+    E4r:["weak","C2","원자료에서 2022년 값이 높다는 건 보인다. 하지만 분석 없이는 그 해가 왜 기준으로 부적절한지 말할 수 없다.","배출량은 해마다 달라집니다. 숫자 하나가 높다고 문제 삼으시면 곤란합니다.","calm"],
+    E5:["weak","C2","기준연도가 2019년에서 2022년으로 바뀐 것은 맞다. 하지만 사업장 확장이 있으면 기준연도 재설정은 국제 지침도 허용한다. 2022년이 왜 부적절한지가 빠졌다.","2공장 증설로 사업 구조가 바뀌었습니다. 기준연도 재설정은 국제 지침이 허용하는 절차입니다.","calm"],
+    E9:["weak","C2","기준연도 변경을 본부가 요청했다는 진술은 의미 있다. 그러나 누가 바꿨는지와 그 기준이 부적절한지는 다른 문제다.","기준연도는 본부가 정합니다. 그게 제 역할입니다.","calm"]
+  },
+  p_40:{
+    E4a:["direct","C2","40%라는 숫자 자체는 계산상 맞다. 하지만 일시적 급증 연도를 기준으로 했기 때문에 나온 값이다. 2019년 기준이면 13%다.","…수치는 2022년 기준으로 정확합니다. 기준을 달리하면 결과가 달라지는 것도… 사실입니다.","pressed"],
+    E8:["direct","C1","증인이 말한 주어는 ‘태림그룹’이다. 그룹 전체로는 6%다. 40%라는 숫자가 그룹 전체에 해당하지 않는다.","…그룹 전체로는 6%입니다. 40%는 해온 산업단지의 수치입니다.","pressed"],
+    E1:["confirm","C2","보고서가 바로 40%라고 적고 있다. 숫자 자체를 공격하면 증인에게 유리하다.","보고서에 40%라고 정확히 적혀 있지 않습니까. 조사관께서 직접 확인하신 그대로입니다.","smile"],
+    E2:["confirm","C2","검증의견서는 40%가 제출 자료와 일치한다고 확인해 준다. 숫자 자체를 공격하는 건 역효과다.","검증기관도 이 수치를 확인했습니다. 더 설명이 필요합니까?","smile"],
+    E11:["confirm","C2","해온시도 40%를 인용했다. 증인의 말을 지지하는 자료다.","해온시도 같은 수치를 발표했습니다.","smile"]
+  },
+  p_ver:{
+    E2:["scope","C3","검증은 실제로 이뤄졌다. 다만 대상은 해온 산업단지의 Scope 1·2뿐이다. 증인이 말한 ‘이 수치’, 즉 태림그룹의 40%를 검증한 것은 아니다.","검증은 보고서에 적힌 범위 그대로 이뤄졌습니다. 범위가 산단인 것도 보고서에 명시돼 있습니다.","evasive"],
+    E1:["weak","C3","보고서가 산단 범위라는 건 보여 주지만, 검증이 어디까지였는지는 검증 문서로 확인해야 한다.","보고서와 검증은 별개 문서입니다. 검증 결과를 보시죠.","calm"],
+    E8:["weak","C3","그룹 전체 수치가 다르다는 건 보여 주지만, 검증 범위를 직접 보여 주는 문서가 아니다.","그룹 명세서는 검증과 관련이 없습니다.","calm"]
+  },
+  p_acc:{_all:["premature","C3","‘정확하게 공개했다’는 앞의 두 문장에서 끌어낸 결론이다. 결론을 공격하기 전에 전제가 되는 문장부터 무너뜨려야 한다.","결론만 부정하신다면 근거를 먼저 말씀해 주셔야겠습니다.","calm"]},
+  p_re:{
+    E7:["direct","C4","검침 기록상 산단이 받는 전기의 79%는 일반 전력망에서 온다. 야간에는 100%다. ‘재생에너지로 가동된다’는 말은 실제 공급 방식과 다르다.","…물리적으로는 계통 전력을 씁니다. 사용량만큼 인증서를 구매해 상쇄한 것입니다.","pressed"],
+    Qw:["scope","C4","증인 스스로 계통 전력을 쓴다고 인정했다. ‘재생에너지로 가동된다’는 표현은 실제 공급과 다르다.","…네, 계통 전력을 씁니다. 그 부분은 인증서로 상쇄합니다.","pressed"],
+    E6:["scope","C4","재생에너지 중 69%가 인증서 구매다. 산단이 그만큼의 재생 전력을 직접 쓴 것이 아니다.","인증서 비중이 높은 건 맞습니다. 그러나 그것도 재생에너지 조달 방식입니다.","evasive"]
+  },
+  p_rec:{_all:["misfire","C4","인증서(REC) 구매는 RE100 같은 국제 이니셔티브가 실제로 인정하는 방식이다. 사실인 문장을 공격했다.","조사관께서는 제도를 잘못 이해하고 계시군요. REC는 RE100에서 공식 인정하는 수단입니다.","smile"]},
+  p_expr:{
+    E6:["weak","C4","인증서 비중을 보여 주지만, ‘표현’이 왜 문제인지는 앞 문장의 ‘가동’이 실제와 다르다는 데서 출발해야 한다.","표현은 조달 결과를 요약한 것입니다.","calm"],
+    E7:["weak","C4","결론을 공격하기 전에 ‘가동되고 있다’는 문장부터 짚는 편이 강하다.","표현만 문제 삼으시는 겁니까?","calm"]
+  }
+};
+const DEFLINE = {
+  C1:"“보고서 어디에도 숫자를 부풀린 곳은 없습니다. 조사관께서 문서를 오독하신 겁니다.”",
+  C2:"“기준연도 설정은 국제 지침이 허용하는 회사의 재량입니다.”",
+  C3:"“검증기관은 국내 최고 수준의 인증기관입니다. 그 결과를 부정하시는 겁니까?”",
+  C4:"“재생에너지 조달은 국제적으로 인정된 방식입니다. 문제 삼을 이유가 없습니다.”"
+};
+const QS = [
+  {id:"q1", t:"그룹 전체의 배출량 감축률은 따로 공개했습니까?", claim:"C1", useful:true, give:"Qg", skipIf:"E8",
+    a:[["kang","그룹 전체는… 정부 명세서로 따로 공시합니다. 감축률은 한 자릿수입니다. 하지만 핵심은 산단의 성과입니다.","evasive"]]},
+  {id:"q2", t:"기준연도는 언제부터 2022년이었습니까?", claim:"C2", useful:true,
+    a:[["kang","올해 보고서부터입니다. 2공장 증설을 반영한 재설정입니다.","calm"],["han","재설정했다는 건 인정했어. 하지만 2022년이 ‘왜’ 부적절한지는 데이터로 보여 줘야 해.","calm"]]},
+  {id:"q3", t:"검증의견서의 검증 대상은 어디까지였습니까?", claim:"C3", useful:true,
+    a:[["kang","보고서에 명시된 범위입니다. …해온 산업단지의 Scope 1·2입니다.","evasive"]]},
+  {id:"q4", t:"산단이 실제로 공급받는 전력은 어디에서 옵니까?", claim:"C4", useful:true, give:"Qw", skipIf:"E7", stage:"T2",
+    a:[["kang","물리적으로는… 계통 전력을 함께 사용합니다. 사용량만큼 인증서를 구매합니다.","pressed"]]},
+  {id:"q5", t:"이 수치는 회장의 지시로 만든 것입니까?", useful:false, pen:10,
+    a:[["kang","근거 없는 추측에는 답변하지 않겠습니다.","angry"],["chair","조사관, 근거 없는 추측성 질문은 삼가 주십시오.","calm"]]},
+  {id:"q6", t:"사고 당일 수질 기록이 비어 있는 이유는 무엇입니까?", useful:false, pen:5, req:"E10", flag:"water",
+    a:[["chair","오늘 의제는 탄소 배출 공시입니다. 수질 문제는 다음 회차에서 다루겠습니다.","calm"],["han","의제 밖이긴 했지만… 기록이 빈 건 저쪽도 알아챘을 거야. 기억해 둬.","calm"]]}
+];
+
+/* =========================================================
+   STATE
+   ========================================================= */
+let S;
+function fresh(){
+  S = {
+    scene:"title", days:7, ev:["E1","E2","E3"], reviewed:[], loc:"office", note:"sus",
+    e4:null, interviewed:false, fz:null,
+    cred:100, warned:false, sh:{C1:0,C2:0,C3:0,C4:0}, br:{C1:false,C2:false,C3:false,C4:false},
+    stage:"T1", sel:null, defl:{T1:[],T2:[]}, qLeft:4, asked:[], flags:{},
+    st:{pres:0, good:0, weak:0, bad:0, gq:0, bq:0, r4w:0, r5w:0, route:[], r4:null, concl:null, firstBreak:null},
+    r5:{claim:null, ev:null, done:{claim:false, ev:false}}
+  };
+}
+fresh();
+const has = id => S.ev.includes(id);
+
+/* =========================================================
+   SOUND (WebAudio, 클릭 이후에만)
+   ========================================================= */
+let AC=null, muted=false;
+function tone(freqs, dur=.18, type="sine", gain=.08){
+  if(muted) return;
+  try{
+    AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime;
+    freqs.forEach((f,i)=>{
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.type=type; o.frequency.value=f;
+      g.gain.setValueAtTime(0,t+i*.05); g.gain.linearRampToValueAtTime(gain,t+i*.05+.02); g.gain.exponentialRampToValueAtTime(.0001,t+i*.05+dur);
+      o.connect(g); g.connect(AC.destination); o.start(t+i*.05); o.stop(t+i*.05+dur+.05);
+    });
+  }catch(e){}
+}
+const SFX = {
+  page:()=>tone([620],.08,"triangle",.04),
+  present:()=>tone([98,147],.35,"square",.06),
+  hit:()=>tone([392,523,784],.45,"triangle",.09),
+  bad:()=>tone([180,170],.5,"sawtooth",.05),
+  soft:()=>tone([300,280],.25,"triangle",.05)
+};
+
+/* =========================================================
+   PORTRAITS (단순 기하 초상)
+   ========================================================= */
+function portrait(id, expr="calm", size=96){
+  const c=CH[id]; if(!c||id==="nar"||id==="me") return "";
+  const skin="#d9b99b", suit= id==="kang"?"#1f2f4a": id==="han"?"#23342f": id==="yoon"?"#3a3226":"#2c3036";
+  let hair="";
+  if(c.hair==="bob") hair='<path d="M28 44 Q30 14 60 14 Q90 14 92 44 L92 66 Q86 70 84 62 L84 40 Q60 30 36 40 L36 62 Q34 70 28 66Z" fill="#14181d"/>';
+  if(c.hair==="side") hair='<path d="M30 46 Q30 16 62 16 Q90 18 90 44 Q78 28 56 30 Q40 32 34 48Z" fill="#20252c"/>';
+  if(c.hair==="long") hair='<path d="M26 50 Q26 14 60 14 Q94 14 94 50 L96 96 L84 96 L84 44 Q60 32 36 44 L36 96 L24 96Z" fill="#2a1f19"/>';
+  if(c.hair==="grey") hair='<path d="M32 42 Q36 18 60 18 Q84 18 88 42 Q74 30 60 30 Q46 30 32 42Z" fill="#9aa1a8"/>';
+  const brow = {calm:["M44 47 L54 46","M66 46 L76 47"], smile:["M44 46 L54 45","M66 45 L76 46"], pressed:["M44 44 L54 48","M66 48 L76 44"], angry:["M44 44 L55 49","M65 49 L76 44"], evasive:["M44 47 L54 47","M66 47 L76 47"]}[expr]||["M44 47 L54 46","M66 46 L76 47"];
+  const ex = expr==="evasive"?4:0;
+  const mouth = {calm:"M52 76 L68 76", smile:"M51 74 Q60 81 69 74", pressed:"M52 78 Q60 73 68 78", angry:"M51 79 Q60 72 69 79", evasive:"M54 77 L66 75"}[expr]||"M52 76 L68 76";
+  const sweat = expr==="pressed"? '<path d="M84 40 Q88 48 84 52 Q80 48 84 40Z" fill="#8fd3ff"/>' : "";
+  const glasses = c.glasses? `<g fill="none" stroke="#111" stroke-width="2"><circle cx="49" cy="56" r="7"/><circle cx="71" cy="56" r="7"/><path d="M56 56 L64 56"/></g>`:"";
+  return `<div class="por" aria-hidden="true"><svg width="${size}" height="${size*1.15}" viewBox="0 0 120 138">
+    <rect x="0" y="0" width="120" height="138" rx="10" fill="${c.c}" opacity=".18"/>
+    <path d="M14 138 Q18 102 60 98 Q102 102 106 138Z" fill="${suit}"/>
+    <path d="M52 100 L60 120 L68 100Z" fill="#e8ece9"/>
+    ${id==="kang"?'<path d="M58 104 L62 104 L64 126 L60 132 L56 126Z" fill="#38c3a6"/>':""}
+    <rect x="52" y="82" width="16" height="18" fill="${skin}"/>
+    <ellipse cx="60" cy="58" rx="27" ry="31" fill="${skin}"/>
+    ${hair}
+    <g stroke="#1a1a1a" stroke-width="2.6" stroke-linecap="round" fill="none"><path d="${brow[0]}"/><path d="${brow[1]}"/></g>
+    <circle cx="${49+ex}" cy="56" r="2.6" fill="#1a1a1a"/><circle cx="${71+ex}" cy="56" r="2.6" fill="#1a1a1a"/>
+    ${glasses}
+    <path d="${mouth}" stroke="#5a2b22" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    ${sweat}
+  </svg></div>`;
+}
+
+/* =========================================================
+   DIALOG QUEUE
+   ========================================================= */
+let Q=[], busy=false;
+function say(items){ // items: [who,text,expr] 또는 함수
+  Q.push(...items); if(!busy) nextLine();
+}
+function nextLine(){
+  const dlg=document.getElementById('dlg');
+  if(!Q.length){ busy=false; dlg.classList.add('hidden'); dlg.innerHTML=""; render(); return; }
+  busy=true;
+  const it=Q.shift();
+  if(typeof it==="function"){ it(); nextLine(); return; }
+  const [who,text,expr]=it; const c=CH[who]||CH.nar;
+  SFX.page();
+  dlg.classList.remove('hidden');
+  dlg.innerHTML=`<div class="dlg-in">${portrait(who,expr||"calm",64)}<div class="body">
+    ${c.name?`<div class="who" style="color:${c.c}">${c.name}<small>${c.role}</small></div>`:""}
+    <div class="txt ${who==="nar"?"narr":""}">${text}</div>
+    <button class="nx" id="nx" type="button">${Q.length?"다음 ▸":"계속 ▸"}</button></div></div>`;
+  const b=document.getElementById('nx'); b.onclick=nextLine; b.focus({preventScroll:true});
+  render(); // 대화 중에는 장면 조작이 잠김
+}
+
+/* =========================================================
+   FX
+   ========================================================= */
+function stamp(text, kind="good"){
+  const fx=document.getElementById('fx');
+  fx.innerHTML=`<div class="stamp ${kind}"><div>${text}</div></div>`;
+  setTimeout(()=>{fx.innerHTML="";},950);
+  if(kind!=="good"){ const m=document.getElementById('scene'); m.classList.remove('shake'); void m.offsetWidth; m.classList.add('shake'); }
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function render(){
+  renderTop();
+  const sc=document.getElementById('scene');
+  const f = {title:vTitle, invest:vInvest, foren:vForen, hearing:vHearing, r4:vR4, r5:vR5, result:vResult}[S.scene];
+  sc.innerHTML = f? f() : "";
+  bind();
+}
+function renderTop(){
+  const t=document.getElementById('top');
+  if(S.scene==="title"){ t.innerHTML=`<span class="brand">GREEN <b>FILE</b></span><span class="spacer"></span><button class="tbtn" data-a="mute" type="button">${muted?"소리 켜기":"소리 끄기"}</button>`; return; }
+  const inHearing=["hearing","r4","r5"].includes(S.scene);
+  t.innerHTML=`<span class="brand">GREEN <b>FILE</b></span><span class="chap">CHAPTER 1 · 완벽한 친환경 기업</span><span class="spacer"></span>
+   ${!inHearing&&S.scene!=="result"?`<span class="stat">청문회까지 <strong>D-${S.days}</strong></span>`:""}
+   ${inHearing?`<span class="stat">조사관 신뢰도 <span class="meter ${S.cred<=35?"low":""}"><span style="width:${S.cred}%"></span></span><strong>${S.cred}</strong></span>`:""}
+   ${S.scene==="hearing"?`<span class="stat">추가 질문 <strong>${S.qLeft}</strong></span>`:""}
+   <button class="tbtn" data-a="file" type="button">증거 파일<span class="n">${S.ev.length}</span></button>
+   <button class="tbtn" data-a="mute" type="button">${muted?"소리 켜기":"소리 끄기"}</button>`;
+}
+
+function vTitle(){
+  return `<div class="title">
+    <span class="file">CASE FILE 01 · 해온 산업단지</span>
+    <h1>GREEN FILE<small>녹색의 증언</small></h1>
+    <blockquote>숫자는 거짓말을 하지 않는다.<br>하지만 숫자를 고르는 사람은 거짓말을 할 수 있다.</blockquote>
+    <p>탄소중립 모범 기업 태림그룹의 산업단지에서 폐수 처리 시설이 멈췄다. 기업과 시는 문제없다고 말한다. 당신은 특별청문회를 준비하는 신입 감사 조사관이다. 7일 안에 자료를 모으고, 증인의 진술에서 증거가 말하는 것과 말하지 않는 것을 가려내야 한다.</p>
+    <p style="font-size:13px">CHAPTER 1 데모 · 조사부터 첫 청문회까지 약 15–20분 · 등장 기업·인물·수치는 모두 가상입니다.</p>
+    <button class="primary" data-a="start" type="button">사건 파일 열기</button>
+  </div>`;
+}
+
+function susStatus(s){
+  if(s.need.some(has)) return ["done","근거 확보"];
+  if(s.base.some(has)) return ["some","단서 있음"];
+  return ["none","미검증"];
+}
+function vInvest(){
+  const loc=LOCS.find(l=>l.id===S.loc);
+  const items=loc.items.map(it=>{
+    const got = it.ev==="E4"? S.e4!==null : has(it.ev);
+    const disabled = got || S.days<it.cost || busy;
+    return `<div class="doc ${got?"got":""}"><span class="ty">${it.forensic?"수치 분석":it.interview?"면담":"자료"}</span><h4>${it.label}</h4><p>${it.blurb}</p>
+      <div class="act"><span class="cost">소요 ${it.cost}일</span><button type="button" data-a="take" data-ev="${it.ev}" ${disabled?"disabled":""}>${got?"완료":it.forensic?"분석 시작":it.interview?"면담하기":"조사하기"}</button></div></div>`;
+  }).join("");
+  const sus=SUSPECTS.map(s=>{const [k,l]=susStatus(s);return `<div class="sus"><span>${s.q}</span><span class="pill ${k}">${l}</span></div>`;}).join("");
+  const tl=`<div class="tl">
+    <div><span>2022</span><span>해온 산단 2공장 시운전</span></div>
+    <div><span>2025.06</span><span>2024 보고서 발간</span></div>
+    <div><span>2026.06</span><span>2025 보고서 발간 · “40% 감축”</span></div>
+    <div><span>2026.07</span><span>그룹 홍보 영상 공개</span></div>
+    <div class="hot"><span>2026.10.12</span><span>폐수처리시설 정지 · 하천 유입</span></div>
+    <div><span>2026.10.14</span><span>태림그룹 성명 · 해온시 입장</span></div>
+    <div class="hot"><span>D-${S.days}</span><span>특별청문회 (증인: 강도윤)</span></div></div>`;
+  const says=`<div class="say"><b>강도윤 · 언론 인터뷰</b>“태림그룹은 탄소배출량을 40% 줄였고, 산단은 100% 재생에너지로 가동됩니다.”</div>
+    <div class="say"><b>해온시 · 성명</b>“프로젝트의 환경 목표는 정상적으로 달성되고 있습니다.”</div>
+    ${S.interviewed?`<div class="say"><b>윤하진 · 면담</b>“그룹 전체 40%라는 숫자는 만든 적이 없습니다.”</div>`:""}`;
+  const noteBody = S.note==="sus"?sus : S.note==="tl"?tl : says;
+  return `<div class="inv">
+    <div class="col"><span class="h">조사 장소</span>
+      ${LOCS.map(l=>`<button type="button" class="loc ${l.id===S.loc?"on":""}" data-a="loc" data-id="${l.id}"><strong>${l.name}</strong><small>${l.sub}</small></button>`).join("")}
+      <div class="note" style="margin-top:6px"><span class="h">남은 조사 기간</span><span style="font-family:var(--mono);font-size:26px;color:${S.days<=2?"var(--warn)":"var(--teal)"}">${S.days}일</span><span style="font-size:12.5px;color:var(--muted)">모든 자료를 볼 시간은 없다. 무엇이 청문회에 필요한지 골라야 한다.</span></div>
+      <button class="primary" type="button" data-a="tohearing" ${busy?"disabled":""}>청문회 개시</button>
+    </div>
+    <div class="col">
+      <div class="brief">${portrait("han","calm",56)}<p><strong>${loc.name}</strong> · ${S.days>0?"조사할 자료를 고르세요. 기본 자료 3건(보고서, 검증의견서, 홍보 영상)은 이미 증거 파일에 있습니다.":"조사 기간이 끝났습니다. 청문회를 개시하세요."}</p></div>
+      <div class="items">${items}</div>
+    </div>
+    <div class="col"><div class="note">
+      <div class="tabs"><button type="button" class="${S.note==="sus"?"on":""}" data-a="note" data-id="sus">의혹</button><button type="button" class="${S.note==="tl"?"on":""}" data-a="note" data-id="tl">타임라인</button><button type="button" class="${S.note==="say"?"on":""}" data-a="note" data-id="say">진술</button></div>
+      ${noteBody}</div></div>
+  </div>`;
+}
+
+/* ---------- 데이터 포렌식 ---------- */
+const DATA = [[2019,69.0],[2020,66.5],[2021,71.0],[2022,100.0],[2023,88.0],[2024,74.0],[2025,60.0]];
+const NOTES = {2020:"코로나19로 2개월 가동 축소",2021:"2공장 착공",2022:"2공장 시운전 + 노후 LNG 보일러 병행 가동 (일시적)",2023:"노후 보일러 단계적 폐쇄",2024:"2공장 정상 가동"};
+function red(base){ const b=DATA.find(d=>d[0]===base)[1]; return (b-60)/b*100; }
+function vForen(){
+  const F=S.fz;
+  const W=640,H=300,pl=48,pb=34,pt=16,bw=56,gap=(W-pl-20-bw*7)/6;
+  const y=v=>pt+(H-pt-pb)*(1-v/110);
+  let bars="";
+  DATA.forEach(([yr,v],i)=>{
+    const x=pl+i*(bw+gap);
+    const isBase=F.base===yr, isEnd=yr===2025;
+    bars+=`<g class="bar-g" data-a="fbase" data-y="${yr}" style="cursor:pointer" role="button" tabindex="0" aria-label="${yr}년 ${v}천 톤, 기준연도로 선택">
+      <rect x="${x}" y="${y(v)}" width="${bw}" height="${H-pb-y(v)}" rx="3" fill="${isBase?"#38c3a6":isEnd?"#6f97cf":"#2f4258"}"/>
+      <text x="${x+bw/2}" y="${y(v)-6}" text-anchor="middle" font-size="12" fill="#e4ebe8" font-family="IBM Plex Mono">${v.toFixed(1)}</text>
+      <text x="${x+bw/2}" y="${H-pb+18}" text-anchor="middle" font-size="12" fill="#8796a5" font-family="IBM Plex Mono">${yr}</text></g>`;
+    if(NOTES[yr] && F.notes){
+      bars+=`<g data-a="fnote" data-y="${yr}" style="cursor:pointer" role="button" tabindex="0" aria-label="${yr}년 각주: ${NOTES[yr]}"><circle cx="${x+bw-4}" cy="${y(v)+14}" r="9" fill="${F.note===yr?"#f0893a":"#d6b26a"}"/><text x="${x+bw-4}" y="${y(v)+18}" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1405">i</text></g>`;
+    }
+  });
+  let grid="";[0,25,50,75,100].forEach(v=>{grid+=`<line x1="${pl}" x2="${W-10}" y1="${y(v)}" y2="${y(v)}" stroke="#2a3a4f"/><text x="${pl-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#8796a5" font-family="IBM Plex Mono">${v}</text>`;});
+  const r = F.base? red(F.base):null;
+  const tries=`<span class="tries">남은 기회 ${[0,1,2].map(i=>`<i class="${i<F.miss?"x":""}"></i>`).join("")}</span>`;
+  const st=(n,title,body)=>`<div class="step ${F.step===n?"cur":F.step>n?"ok":""}"><span class="k">단계 ${n}${F.step>n?" · 완료":""}</span><strong>${title}</strong>${F.step===n?body:""}</div>`;
+  return `<div style="display:flex;flex-direction:column;gap:14px">
+    <div class="brief">${portrait("han","calm",56)}<p><strong>데이터 포렌식 · 숫자 뒤의 진실</strong> · 보고서의 40%가 어떻게 계산됐는지 재현하고, 그 계산이 공정한지 판단하세요. 막대를 클릭하면 그 해가 기준연도가 됩니다.</p></div>
+    <div class="foren">
+      <div class="chart">
+        <div class="readout"><span class="h">해온 산단 Scope 1·2 배출량 (천 tCO₂eq)</span><span class="spacer"></span>
+          <span>${F.base?`기준 ${F.base} → 2025`:"기준연도를 고르세요"}</span><span class="big">${r!==null?(r>=0?"−":"+")+Math.abs(r).toFixed(1)+"%":"—"}</span></div>
+        <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="연도별 배출량 막대그래프">${grid}${bars}</svg>
+        <div class="btnrow" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button type="button" class="ghost" data-a="fnotes">${F.notes?"각주 숨기기":"원자료 각주 보기"}</button>
+          ${F.note?`<span class="foot"><b style="color:var(--warn)">${F.note}년 각주</b> · ${NOTES[F.note]}</span>`:`<span class="foot">각주 표시(i)를 클릭하면 내용을 볼 수 있습니다.</span>`}
+        </div>
+        <table class="dtable"><tr><th style="text-align:left">연도</th>${DATA.map(d=>`<th>${d[0]}</th>`).join("")}</tr><tr><td style="text-align:left;color:var(--muted)">배출량</td>${DATA.map(d=>`<td>${d[1].toFixed(1)}</td>`).join("")}</tr></table>
+      </div>
+      <div class="steps">
+        ${tries}
+        ${st(1,"보고서의 40%를 재현하라","<span class=\"foot\">어느 해를 기준으로 해야 2025년 감축률이 40%가 되는지 찾아 선택한 뒤 확정하세요.</span><button type=\"button\" class=\"primary\" data-a=\"f1\" "+(F.base?"":"disabled")+">"+(F.base?F.base+"년을 기준으로 확정":"막대를 먼저 고르세요")+"</button>")}
+        ${st(2,"그 해가 기준으로 공정한가?","<span class=\"foot\">각주를 열어, 그 해 배출량이 왜 높았는지 설명하는 근거를 고르세요.</span><button type=\"button\" class=\"primary\" data-a=\"f2\" "+(F.note?"":"disabled")+">"+(F.note?F.note+"년 각주를 근거로 채택":"각주를 먼저 고르세요")+"</button>")}
+        ${st(3,"공정한 기준으로 다시 계산하라","<span class=\"foot\">직전 보고서는 2019년을 기준연도로 썼습니다. 2019년 대비 2025년 감축률은 몇 %입니까? (소수점 버림 허용)</span><div style=\"display:flex;gap:8px;align-items:center\"><input id=\"f3in\" type=\"number\" inputmode=\"decimal\" aria-label=\"감축률 퍼센트\">%<button type=\"button\" class=\"primary\" data-a=\"f3\">제출</button></div>")}
+        <button type="button" class="ghost" data-a="fquit">분석 중단 (원자료만 가져가기)</button>
+      </div>
+    </div></div>`;
+}
+function fMiss(msg){
+  const F=S.fz; F.miss++; SFX.bad();
+  if(F.miss>=3){
+    S.e4="raw"; S.ev.push("E4r"); S.scene="invest";
+    say([["han",msg,"calm"],["han","기회를 다 썼어. 원자료는 챙겼지만 분석은 미완성이야. 기준연도 문제를 청문회에서 직접 증명하긴 어려워졌어. 다른 길로 돌아가야 해.","pressed"]]);
+  } else say([["han",msg,"calm"]]);
+}
+
+/* ---------- 청문회 ---------- */
+function vHearing(){
+  const T=TESTI[S.stage];
+  const lines=T.lines.map((ln,i)=>`<div class="stmt"><span class="no">${String(i+1).padStart(2,"0")}</span><span>${ln.map(p=>{
+    if(typeof p==="string") return p;
+    const g=GUARD[p.id], dead=S.br[g]&&["p_group","p_base","p_ver","p_re"].includes(p.id) || (p.id==="p_40"&&S.br.C2);
+    const cls=["ph"]; if(S.sel===p.id) cls.push("sel"); if(dead) cls.push("dead"); else if(S.sh[g]>0) cls.push("shield");
+    return `<button type="button" class="${cls.join(" ")}" data-a="ph" data-id="${p.id}" ${dead||busy?"disabled":""}>${p.t}</button>`;
+  }).join("")}</span></div>`).join("");
+  const defs=S.defl[S.stage].map(d=>`<div class="def">방어 논리 강화 · ${d}</div>`).join("");
+  const claims=Object.entries(CLAIMS).filter(([k,c])=>c.stage===S.stage).map(([k,c])=>`<div class="claim ${S.br[k]?"broken":""}"><span>${c.t}${c.opt?" (선택)":""}</span><span class="sh">${S.br[k]?"":("■".repeat(2+S.sh[k]))}</span></div>`).join("");
+  const selTxt = S.sel? `선택한 구절: <b style="color:var(--teal)">‘${findPh(S.sel).t}’</b> · 어떤 증거로 지적하시겠습니까?` : "증언에서 의문을 제기할 구절(점선)을 먼저 고르세요. 주황 점선은 증인의 방어가 강화된 구절입니다.";
+  return `<div class="hear">
+    <div class="stand">${portrait("kang",S.kexpr||"calm",130)}<span class="nm">강도윤</span><span class="rl">태림그룹 지속가능경영본부장</span>
+      <div class="claims"><span class="h" style="text-align:left">쟁점 방어선</span>${claims}</div>
+      <span class="foot" style="text-align:left">■ 하나당 필요한 증거 강도. 직접 모순 ■■■ · 범위 과장 ■■ · 의문 제기 ■</span></div>
+    <div class="testi"><h3>${T.title}</h3><p class="sub">${T.sub}</p>${lines}${defs}
+      <div class="bar"><span class="hint">${selTxt}</span>
+        <button type="button" class="act-btn q" data-a="ask" ${busy||S.qLeft<=0?"disabled":""}>추가 질문 (${S.qLeft})</button>
+        <button type="button" class="act-btn" data-a="present" ${busy||!S.sel?"disabled":""}>증거 제시</button></div>
+    </div></div>`;
+}
+function findPh(id){ for(const T of Object.values(TESTI)) for(const ln of T.lines) for(const p of ln) if(typeof p==="object"&&p.id===id) return p; }
+function judge(ph, ev){
+  const tbl=JUDGE[ph]||{};
+  if(tbl[ev]) return tbl[ev];
+  if(tbl._all) return tbl._all;
+  return ["irrelevant",GUARD[ph],`이 자료는 ‘${findPh(ph).t}’라는 구절과 직접 관련이 없다. 무엇을 반박하려는지 증인에게 공격할 틈을 줬다.`,"그 자료가 지금 제 진술과 무슨 관계가 있습니까?","smile"];
+}
+function present(evId){
+  closeModal();
+  const ph=S.sel; const [g,claim,why,line,expr]=judge(ph,evId);
+  S.st.pres++; SFX.present();
+  const items=[["me",`<b>지적합니다.</b> ‘${findPh(ph).t}’ — 이 자료를 보십시오. <span style="color:var(--muted)">[${EV[evId].title}]</span>`]];
+  if(g in STR){
+    if(S.br[claim]){ items.push(["han","그 쟁점은 이미 무너뜨렸어. 다른 구절을 보자.","calm"]); say(items); return; }
+    const need=2+S.sh[claim], str=STR[g];
+    if(str>=need){
+      S.st.good++; S.br[claim]=true; S.kexpr=expr;
+      if(!S.st.firstBreak) S.st.firstBreak=claim;
+      S.st.route.push(claim);
+      items.push(()=>{stamp(g==="direct"?"모순 발견":"범위 과장","good");SFX.hit();});
+      items.push(["kang",line,expr]);
+      items.push(["han",`<b>${GLABEL[g]}.</b> ${why}`,"calm"]);
+      items.push(...afterBreak(claim));
+      S.sel=null; say(items); return;
+    }
+    S.st.weak++; S.cred=Math.max(10,S.cred-5);
+    items.push(()=>{stamp(str<2?"의문 제기":"방어됨","soft");SFX.soft();});
+    items.push(["kang",line,"calm"]);
+    if(str<2) items.push(["han",`<b>${GLABEL[g]}.</b> ${why}`,"calm"]);
+    else items.push(["han",`방향은 맞아. 그런데 증인이 이 쟁점의 방어 논리를 이미 굳혔어. 지금은 범위 과장 정도로는 못 뚫어. 추가 질문으로 흔들거나, 더 직접적인 증거가 필요해.`,"calm"]);
+    items.push(lowCred);
+    say(items); return;
+  }
+  // 오답: 증인의 반격, 방어 강화
+  S.st.bad++;
+  const pen = g==="misfire"?20:15; S.cred=Math.max(10,S.cred-pen);
+  const target=claim||GUARD[ph]; const before=S.sh[target];
+  S.sh[target]=Math.min(2,S.sh[target]+1);
+  S.kexpr=expr;
+  items.push(()=>{stamp("반격","bad");SFX.bad();});
+  items.push(["kang",line,expr]);
+  if(S.sh[target]>before){ S.defl[S.stage].push(DEFLINE[target]); items.push(["kang",DEFLINE[target].replace(/[“”]/g,""),"smile"]); }
+  items.push(["han",`<b>${GLABEL[g]}.</b> ${why} ${S.sh[target]>before?"증인이 ‘"+CLAIMS[target].t+"’ 쟁점의 방어를 굳혔어. 추가 질문으로 흔들면 다시 기회가 생길 거야.":""}`,"pressed"]);
+  items.push(lowCred);
+  S.sel=null; say(items);
+}
+function lowCred(){
+  if(S.cred<=35 && !S.warned){
+    S.warned=true;
+    Q.unshift(["chair","조사관, 근거가 분명한 지적만 해 주십시오. 위원회의 시간이 무한하지 않습니다.","calm"],["han","침착해. 증인의 문장이 사실인지가 아니라, 그 문장이 ‘어디까지’를 말하는지 봐.","calm"]);
+  }
+}
+function afterBreak(claim){
+  const out=[];
+  if(claim==="C1") out.push(["kang","…정정하겠습니다. 40%는 해온 산업단지 기준입니다. 그룹 전체를 말씀드린 것은 표현상의 문제였습니다.","pressed"]);
+  if(claim==="C2") out.push(["han","재설정 자체는 허용돼. 하지만 허용되는 건 사업 구조가 바뀌었을 때야. 2022년은 일시적인 급증이었어. 감축 폭을 크게 보이게 하는 해를 고른 거지.","calm"]);
+  if(claim==="C3") out.push(["han","검증은 진짜야. 다만 증인이 말한 ‘이 수치’, 그러니까 그룹 전체 40%를 검증한 게 아니었을 뿐이지.","calm"]);
+  if(S.stage==="T1" && (S.br.C1||S.br.C2) && S.br.C3){
+    if(!S.br.C1 && S.br.C2) out.push(["han","‘그룹 전체’ 문제는 남아 있지만, 기준연도로 40%의 의미 자체를 흔들었어. 증언 1은 충분해.","calm"]);
+    if(S.br.C1 && !S.br.C2 && S.e4!=="analyzed") out.push(["han","기준연도 쪽은 데이터 분석이 없어서 못 건드렸어. 대신 범위 문제로 우회했지. 충분히 유효한 길이야.","calm"]);
+    out.push(()=>{S.stage="T2"; S.sel=null; S.kexpr="evasive";});
+    out.push(["chair","증인, 재생에너지 사용에 대해서도 진술해 주십시오.","calm"]);
+    out.push(["kang","탄소 수치에 대해서는 정정하겠습니다. 그러나 재생에너지 부분은 명확합니다.","evasive"]);
+  }
+  if(S.stage==="T2" && claim==="C4"){
+    out.push(["han","인증서 구매가 불법은 아니야. 문제는 ‘재생에너지로 가동된다’는 말이 실제 공급 방식처럼 들린다는 거지.","calm"]);
+    out.push(()=>{S.scene="r4";});
+    out.push(["kang","보고서에 공개된 수치는 모두 검증받은 사실입니다. 조사관께서는 지금 검증된 사실을 부정하고 계십니다.","angry"]);
+    out.push(["chair","조사관, 증인의 마지막 진술에 대해 질의하십시오.","calm"]);
+  }
+  return out;
+}
+function askQ(id){
+  closeModal();
+  const q=QS.find(x=>x.id===id); S.qLeft--; S.asked.push(id);
+  const items=[["me",q.t]];
+  q.a.forEach(a=>items.push(a));
+  if(q.useful){
+    S.st.gq++;
+    if(q.claim && S.sh[q.claim]>0){ S.sh[q.claim]=0; S.defl[S.stage]=S.defl[S.stage].filter(d=>d!==DEFLINE[q.claim]); items.push(()=>stamp("방어 약화","soft")); items.push(["han",`‘${CLAIMS[q.claim].t}’ 쟁점의 방어가 풀렸어. 다시 증거를 제시할 수 있어.`,"calm"]); }
+    if(q.give && !has(q.give) && !has(q.skipIf)){ S.ev.push(q.give); items.push(["han",`증인의 답변을 증거 파일에 기록했어. <b>[${EV[q.give].title}]</b>`,"calm"]); }
+  } else {
+    S.st.bq++; S.cred=Math.max(10,S.cred-q.pen);
+    if(q.flag) S.flags[q.flag]=true;
+    items.push(lowCred);
+  }
+  say(items);
+}
+
+/* ---------- 라운드 4 : 재반박 ---------- */
+const R4 = [
+  {id:"A", t:"“외부 검증기관이 거짓말을 했다는 말입니까?”", ok:false, why:"검증기관이 거짓말을 했다는 자료는 없다. 검증은 실제로 이뤄졌다. 증인에게 ‘조사관이 검증을 부정한다’는 프레임을 내준다.", k:["kang","검증기관을 모욕하시는 겁니까? 그 기관은 국내 최고 수준입니다.","angry"]},
+  {id:"B", t:"“보고서에는 해온 산업단지의 배출량이 40% 감소했다고 적혀 있습니다. 그런데 귀하는 ‘태림그룹’이 40% 줄였다고 말했고, 홍보 영상은 ‘기업 전체’라고 했습니다. 검증받은 수치와 귀하가 말한 수치가 같은 범위입니까?”", ok:true, why:"검증된 사실은 인정하면서, 검증 범위와 공개 주장의 범위가 다르다는 점을 짚었다.", k:["kang","…보고서에 공개된 수치는 검증받은 사실입니다. 다만 홍보 영상의 표현은… 별도의 검토가 필요할 수 있습니다.","pressed"]},
+  {id:"C", t:"“태림그룹은 친환경 기업이 아닙니다. 모든 성과가 거짓이라는 사실이 드러났습니다.”", ok:false, why:"특정 주장이 과장됐다는 증거가 모든 환경 성과가 거짓이라는 걸 입증하지는 않는다. 산단의 감축은 실제로 있었다.", k:["kang","해온 산단은 실제로 배출량을 줄였습니다. 조사관께서도 방금 그 자료를 인용하셨습니다.","smile"]},
+  {id:"D", t:"“검증받은 것은 2022년 대비 수치입니다. 직전 보고서 기준인 2019년 대비로는 13%입니다. 일시적 급증이 있던 해로 기준연도를 바꾼 이유는 무엇입니까?”", ok:true, need:"E4a", why:"검증된 사실을 부정하지 않으면서, 검증이 다루지 않은 ‘기준 선택’의 문제를 데이터로 짚었다.", k:["kang","…기준연도 변경은 본부 회의에서 결정했습니다. 당시 녹색채권 발행 일정이 있었던 것은… 사실입니다.","pressed"]}
+];
+function vR4(){
+  return `<div class="hear">
+    <div class="stand">${portrait("kang",S.kexpr||"angry",130)}<span class="nm">강도윤</span><span class="rl">태림그룹 지속가능경영본부장</span></div>
+    <div class="round"><h3>재반박 · 증인의 반론</h3>
+      <div class="stmt"><span class="no">!!</span><span>“보고서에 공개된 수치는 모두 검증받은 사실입니다. 조사관께서는 지금 검증된 사실을 부정하고 계십니다.”</span></div>
+      <p class="sub" style="margin:0;color:var(--muted);font-size:13.5px">증인의 말을 그대로 부정하는 것이 답이 아닐 수 있습니다. 증인의 말에서 무엇이 사실이고, 무엇이 섞여 있는지 보세요.</p>
+      ${R4.map(o=>{const locked=o.need&&!has(o.need); const tried=S.r4tried&&S.r4tried.includes(o.id);
+        return `<button type="button" class="opt ${locked?"lock":""}" data-a="r4" data-id="${o.id}" ${locked||tried||busy?"disabled":""}><span class="l">${o.id}</span><span>${locked?"<span style=\"color:var(--muted)\">[데이터 분석 자료가 없어 사용할 수 없는 질의]</span> ":""}${o.t}</span></button>`;}).join("")}
+    </div></div>`;
+}
+
+/* ---------- 라운드 5 : 논리 구성 ---------- */
+const R5C = [
+  {id:"a", t:"태림그룹 전체의 탄소배출량이 40% 감소했다.", ok:true},
+  {id:"b", t:"해온 산업단지의 배출량이 기준연도 대비 40% 감소했다.", ok:false, why:"이건 보고서와 검증으로 확인된 사실이다. 반박할 대상이 아니다."},
+  {id:"c", t:"외부 검증기관이 허위 검증을 했다.", ok:false, why:"증인이 한 주장도 아니고, 그렇게 볼 자료도 없다."}
+];
+const R5OK = {E8:"best", Qg:"good", E2:"good", E1:"good", E9:"good"};
+const R5E = [
+  {id:"x", t:"검증된 자료는 해온 산업단지의 수치다. 따라서 이 자료만으로 그룹 전체가 40% 감축했다고 결론 내릴 수 없다.", end:"A"},
+  {id:"w", t:"그룹 전체 40%는 근거가 없다. 산단의 40%도 일시적 급증 연도를 기준으로 한 값이며, 2019년 기준으로는 13%다. 산단의 감축은 실재하지만 공개된 표현은 실제보다 크다.", end:"A+", need:"E4a"},
+  {id:"y", t:"태림그룹의 환경 성과는 모두 거짓이며, 친환경 기업이라고 할 수 없다.", end:"B"},
+  {id:"z", t:"보고서 수치가 검증을 받았으므로, 홍보 표현의 차이는 문제 삼을 필요가 없다.", end:"C"}
+];
+function vR5(){
+  const R=S.r5;
+  const evs=S.ev.map(id=>`<button type="button" class="opt ${R.ev===id?"on":""} ${R.badEv===id?"badpick":""}" data-a="r5e" data-id="${id}" ${R.done.ev||!R.done.claim||busy?"disabled":""}><span>${EV[id].title}</span></button>`).join("");
+  return `<div class="round" style="max-width:1100px;margin:0 auto">
+    <h3>논리 구성 · 주장 → 증거 → 결론</h3>
+    <p style="margin:0;color:var(--muted);font-size:14px">위원회에 제출할 최종 판단을 세 부분으로 연결하세요. 결론은 한 번만 고를 수 있으며, 청문회의 결과를 결정합니다.</p>
+    <div class="slots">
+      <div class="slot"><span class="k">1 · 반박할 주장 ${R.done.claim?"✓":""}</span>
+        ${R5C.map(c=>`<button type="button" class="opt ${R.claim===c.id?"on":""} ${R.badClaim===c.id?"badpick":""}" data-a="r5c" data-id="${c.id}" ${R.done.claim||busy?"disabled":""}><span>${c.t}</span></button>`).join("")}</div>
+      <div class="slot"><span class="k">2 · 근거가 되는 증거 ${R.done.ev?"✓":""}</span>${evs}</div>
+      <div class="slot"><span class="k">3 · 결론</span>
+        ${R5E.map(e=>{const locked=e.need&&!has(e.need);return `<button type="button" class="opt ${locked?"lock":""}" data-a="r5x" data-id="${e.id}" ${locked||!R.done.ev||busy?"disabled":""}><span>${locked?"<span style=\"color:var(--muted)\">[기준연도 분석이 있어야 쓸 수 있는 결론]</span> ":""}${e.t}</span></button>`;}).join("")}</div>
+    </div></div>`;
+}
+
+/* ---------- 결과 ---------- */
+function letter(x){ return x>=.9?"S":x>=.75?"A":x>=.55?"B":"C"; }
+function vResult(){
+  const st=S.st;
+  const fit = st.pres? st.good/st.pres : 0;
+  const logic = Math.max(0, 1 - st.r4w*.2 - st.r5w*.15 - (st.r4==="D"?-.1:0));
+  const ownedReal=S.ev.length; const rv=S.reviewed.filter(id=>has(id)).length/ownedReal;
+  const prec = Math.max(0,(st.concl==="w"?1:st.concl==="x"?.85:st.concl==="z"?.35:.2) - st.bad*.05 + rv*.15);
+  const strat = Math.max(0,Math.min(1,.45 + st.gq*.2 - st.bq*.2));
+  const G=[["증거 적합성",fit,`제시 ${st.pres}회 중 적중 ${st.good}회`],["논리적 타당성",Math.min(1,logic),`재반박 오답 ${st.r4w} · 논리 구성 오답 ${st.r5w}`],["판단의 정밀성",Math.min(1,prec),`증거 한계 검토 ${S.reviewed.filter(id=>has(id)).length}/${ownedReal}건`],["심문 전략",strat,`유효 질문 ${st.gq} · 부적절 질문 ${st.bq}`]];
+  const end = {
+    "A+":{k:"ENDING 예고 · A",h:"책임 있는 전환",bad:false,p:"위원회는 그룹 전체 40%라는 표현에 근거가 없고, 산단 수치도 기준연도 선택 때문에 실제보다 크게 보였다고 기록했다. 산단의 감축이 실재한다는 점도 함께 남겼다. 과장을 지적하되 성과를 지우지 않은 판단이다."},
+    "A":{k:"ENDING 예고 · A",h:"책임 있는 전환",bad:false,p:"위원회는 검증된 산단 수치와 그룹 전체를 내세운 홍보를 구분해 기록했다. 기업은 홍보 문구를 정정하겠다고 밝혔다. 다만 40%라는 숫자가 어떤 기준에서 나왔는지는 아직 아무도 묻지 않았다."},
+    "B":{k:"ENDING 예고 · B",h:"완벽한 희생양의 그림자",bad:true,p:"‘모든 성과가 거짓’이라는 결론은 기사 제목으로는 강렬했다. 하지만 기업은 산단의 실제 감축 자료를 내밀며 반박했고, 위원회 기록에는 조사관의 과잉 결론이 남았다. 사람들은 누군가를 탓할 준비가 됐지만, 구조를 바꿀 준비는 되지 않았다."},
+    "C":{k:"ENDING 예고 · C",h:"녹색 면죄부",bad:true,p:"위원회는 ‘검증받은 수치’라는 말에 안도했다. 홍보 영상은 그대로 남았고, 녹색채권 발행 일정도 그대로다. 문제는 사라지지 않고 다음 보고서로 넘어갔다."}
+  }[S.st.end];
+  const routeTxt = [];
+  if(S.br.C2) routeTxt.push("데이터 분석으로 기준연도 문제를 증명했다 (2022년 기준 40% → 2019년 기준 13%).");
+  else if(S.e4==="raw") routeTxt.push("배출량 분석을 끝내지 못해 기준연도 쟁점은 증명하지 못했다. 범위 문제로 우회했다.");
+  else routeTxt.push("배출량 원자료를 분석하지 않았다. 기준연도 쟁점은 청문회에 올라오지 않았다.");
+  if(S.br.C1) routeTxt.push("‘태림그룹 전체’와 ‘해온 산업단지’의 범위 차이를 증인이 시인했다.");
+  routeTxt.push("검증은 실제로 이뤄졌지만, 그 대상이 산단 Scope 1·2뿐이었음을 확인했다.");
+  routeTxt.push("‘100% 재생에너지’는 인증서 구매 69%를 포함한 회계상 수치이며, 실제 전력의 79%가 계통 전력임을 드러냈다.");
+  const next = S.br.C2
+    ? "기준연도 변경은 녹색채권 발행 직전 본부 회의에서 결정됐다. 그 회의록에는 누구의 이름이 있을까. 그리고 윤하진은 왜 그 요청을 따랐을까."
+    : "홍보 영상의 ‘기업 전체’ 문구는 누가 승인했을까. 데이터팀이 만들지 않은 숫자는 어디에서 왔을까.";
+  return `<div class="res">
+    <div class="card ending ${end.bad?"bad":""}"><span class="k">${end.k}</span><h2>${end.h}</h2><p>${end.p}</p></div>
+    <div class="grades">${G.map(([l,v,s])=>`<div class="grade"><span class="lb">${l}</span><span class="g ${letter(v)==="C"?"c":""}">${letter(v)}</span><small>${s}</small></div>`).join("")}</div>
+    <div class="card"><h3>청문회 기록 · 입증된 것</h3><ul>${routeTxt.map(t=>`<li>${t}</li>`).join("")}</ul></div>
+    <div class="card"><h3>입증하지 못한 것</h3><ul>
+      <li>누가, 어떤 의도로 홍보 문구와 기준연도를 정했는지는 아직 증거가 없다.</li>
+      <li>인증서 구매는 국제 기준이 인정하는 방식이다. 위법이 아니라 표현의 문제다.</li>
+      <li>이번 청문회는 폐수 처리 시설 사고의 원인을 다루지 않았다.</li></ul></div>
+    <div class="card"><h3>NEXT · CHAPTER 2 사라진 작업 기록</h3><p>${next}</p>${S.flags.water||has("E10")?`<p style="color:var(--warn)">사고 당일 02:00–09:00, 수질 측정값 7시간이 비어 있다. 유지보수 노동자들은 그 시간에 무엇을 봤을까.</p>`:""}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="primary" data-a="restart">처음부터 다시</button></div>
+  </div>`;
+}
+
+/* =========================================================
+   EVIDENCE FILE MODAL
+   ========================================================= */
+let evSel=null, evMode="view";
+function openFile(mode="view"){
+  evMode=mode; if(!evSel||!has(evSel)) evSel=S.ev[0];
+  drawFile();
+}
+function drawFile(){
+  const list=[...S.ev].sort((a,b)=>EVTYPE_ORDER.indexOf(EV[a].type)-EVTYPE_ORDER.indexOf(EV[b].type));
+  const e=EV[evSel]; const rv=S.reviewed.includes(evSel);
+  document.getElementById('modal').innerHTML=`<div class="modal" data-a="mclose"><div class="sheet" role="dialog" aria-modal="true" aria-label="증거 파일">
+    <header><h3>${evMode==="present"?`증거 제시 · ‘${findPh(S.sel).t}’`:"증거 파일"}</h3><button type="button" class="x" data-a="close">닫기</button></header>
+    <div class="ev"><div class="evlist">${list.map(id=>`<button type="button" class="evi ${id===evSel?"on":""}" data-a="evsel" data-id="${id}"><small>${EV[id].type} 증거${S.reviewed.includes(id)?" · 한계 검토됨":""}</small><span class="t">${EV[id].title}</span></button>`).join("")}</div>
+    <div class="evd">
+      <div class="paper"><span class="ty">${e.type} 증거</span><h4>${e.title}</h4>${e.quote}</div>
+      <div class="meta"><div><b>출처</b>${e.src}</div><div><b>작성 시점</b>${e.date}</div><div><b>작성자</b>${e.author}</div><div><b>신뢰도</b>${e.rel}</div></div>
+      <div class="fact"><span class="k">확인된 사실</span>${e.fact}</div>
+      <div class="lim"><span class="k">입증할 수 없는 범위</span>${rv?e.limit:`<span style="color:var(--muted)">이 증거가 무엇을 증명하지 못하는지 검토하지 않았다.</span><button type="button" class="ghost" data-a="review" style="width:max-content">한계 검토하기</button>`}</div>
+      <div class="go">${evMode==="present"?`<button type="button" class="primary" data-a="doPresent">이 증거 제시</button>`:""}</div>
+    </div></div></div></div>`;
+  bindModal();
+}
+function openQs(){
+  const qs=QS.filter(q=>(!q.stage||q.stage===S.stage) && (!q.req||has(q.req)));
+  document.getElementById('modal').innerHTML=`<div class="modal" data-a="mclose"><div class="sheet" style="width:min(640px,100%)" role="dialog" aria-modal="true" aria-label="추가 질문">
+    <header><h3>추가 질문 · 남은 횟수 ${S.qLeft}</h3><button type="button" class="x" data-a="close">닫기</button></header>
+    <div class="qlist"><p style="margin:0;color:var(--muted);font-size:13.5px">좋은 질문은 증인의 방어를 풀거나 새 진술을 끌어냅니다. 근거 없는 질문은 신뢰도를 깎습니다.</p>
+    ${qs.map(q=>`<button type="button" class="qbtn" data-a="q" data-id="${q.id}" ${S.asked.includes(q.id)?"disabled":""}>${q.t}</button>`).join("")}</div></div></div>`;
+  bindModal();
+}
+function closeModal(){ document.getElementById('modal').innerHTML=""; }
+function bindModal(){
+  const m=document.getElementById('modal');
+  m.querySelectorAll('[data-a]').forEach(el=>{
+    el.addEventListener('click',ev=>{
+      const a=el.dataset.a;
+      if(a==="mclose"){ if(ev.target===el) closeModal(); return; }
+      ev.stopPropagation();
+      if(a==="close") closeModal();
+      if(a==="evsel"){ evSel=el.dataset.id; drawFile(); }
+      if(a==="review"){ if(!S.reviewed.includes(evSel)) S.reviewed.push(evSel); SFX.page(); drawFile(); }
+      if(a==="doPresent") present(evSel);
+      if(a==="q") askQ(el.dataset.id);
+    });
+  });
+  const f=m.querySelector('.x'); if(f) f.focus({preventScroll:true});
+}
+document.addEventListener('keydown',e=>{ if(e.key==="Escape") closeModal(); });
+
+/* =========================================================
+   EVENTS
+   ========================================================= */
+function bind(){
+  document.querySelectorAll('#top [data-a], #scene [data-a]').forEach(el=>{
+    const fire=()=>act(el.dataset.a, el.dataset);
+    el.addEventListener('click',fire);
+    if(el.tagName==="g") el.addEventListener('keydown',e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fire();}});
+  });
+}
+function act(a,d){
+  if(a==="mute"){ muted=!muted; renderTop(); bind(); return; }
+  if(a==="file"){ openFile("view"); return; }
+  if(busy && !["mute","file"].includes(a)) return;
+  switch(a){
+    case "start": S.scene="invest"; say([
+      ["nar","10월 12일 새벽, 해온 산업단지의 폐수 처리 시설이 멈췄다. 처리되지 않은 물이 인근 하천으로 흘러들었다."],
+      ["nar","태림그룹은 ‘예외적인 설비 장애’라고 발표했다. 해온시는 ‘환경 목표는 정상 달성 중’이라고 했다. 그리고 국회가 특별청문회를 열기로 했다."],
+      ["han","신입 조사관, 반가워. 특별감사팀 한서윤이야. 청문회까지 7일 남았어.","calm"],
+      ["han","첫 증인은 태림그룹 지속가능경영본부장 강도윤. 그는 늘 ‘40% 감축, 100% 재생에너지’를 말하지. 청문회 의제는 그 두 주장이 사실인지야.","calm"],
+      ["han","기본 자료 세 건은 증거 파일에 넣어 뒀어. 보고서, 검증의견서, 홍보 영상. 하나씩만 보면 다 그럴듯해. 서로 맞대 봐야 틈이 보여.","calm"],
+      ["han","하나 더. 증거마다 ‘증명할 수 없는 범위’가 있어. 그걸 확인하는 습관이 청문회에서 너를 지켜 줄 거야.","smile"]
+    ]); break;
+    case "loc": S.loc=d.id; render(); break;
+    case "note": S.note=d.id; render(); break;
+    case "take": takeItem(d.ev); break;
+    case "tohearing": startHearing(); break;
+    case "fbase": S.fz.base=+d.y; render(); break;
+    case "fnotes": S.fz.notes=!S.fz.notes; render(); break;
+    case "fnote": S.fz.note=+d.y; render(); break;
+    case "f1": if(S.fz.base===2022){ S.fz.step=2; S.fz.notes=true; SFX.hit(); say([["han","맞아, 40%는 2022년을 기준으로 해야 나와. 그런데 직전 보고서의 기준연도는 2019년이었지. 왜 하필 2022년일까? 각주를 봐.","calm"]]); } else fMiss(`${S.fz.base}년 기준이면 감축률이 ${red(S.fz.base).toFixed(1)}%야. 보고서의 40%와 맞지 않아.`); break;
+    case "f2": if(S.fz.note===2022){ S.fz.step=3; SFX.hit(); say([["han","그거야. 2022년은 2공장 시운전과 노후 보일러가 겹쳐서 배출량이 일시적으로 치솟은 해야. 그 해를 기준으로 삼으면 감축 폭이 크게 보이지.","calm"],["han","마지막으로, 원래 기준이던 2019년으로 다시 계산해 봐.","calm"]]); } else fMiss(`${S.fz.note}년 각주는 2022년 배출량이 높았던 이유를 설명하지 않아.`); break;
+    case "f3": { const v=parseFloat(document.getElementById('f3in').value);
+      if(v>=12.5&&v<=13.5){ S.e4="analyzed"; S.ev.push("E4a"); S.scene="invest"; SFX.hit(); stamp("분석 완료","good");
+        say([["han","13%. 40%와는 전혀 다른 그림이지. 분석 메모를 증거 파일에 넣었어.","smile"],["han","다만 기억해. 기준연도를 다시 정하는 것 자체는 허용돼. 우리가 보여 줄 수 있는 건 ‘이 기준이 감축을 크게 보이게 한다’는 것까지야. 누가 왜 바꿨는지는 아직 몰라.","calm"]]);
+      } else fMiss(isNaN(v)?"숫자를 입력해야 해.":`${v}%는 아니야. (2019년 값 − 2025년 값) ÷ 2019년 값으로 계산해 봐.`); } break;
+    case "fquit": S.e4="raw"; S.ev.push("E4r"); S.scene="invest"; say([["han","원자료만 챙겼어. 분석 없이 청문회에서 기준연도를 문제 삼기는 어려울 거야.","calm"]]); break;
+    case "ph": S.sel=d.id; SFX.page(); render(); break;
+    case "present": openFile("present"); break;
+    case "ask": openQs(); break;
+    case "r4": r4pick(d.id); break;
+    case "r5c": r5claim(d.id); break;
+    case "r5e": r5ev(d.id); break;
+    case "r5x": r5end(d.id); break;
+    case "restart": fresh(); render(); break;
+  }
+}
+function takeItem(id){
+  const it=LOCS.flatMap(l=>l.items).find(x=>x.ev===id);
+  if(S.days<it.cost) return;
+  S.days-=it.cost;
+  if(it.forensic){ S.fz={base:null,notes:false,note:null,step:1,miss:0}; S.scene="foren"; say([["han","원자료를 받아 왔어. 보고서의 40%가 어디서 나왔는지 직접 재현해 보자.","calm"]]); return; }
+  if(it.interview){
+    S.interviewed=true; S.ev.push("E9");
+    say([["yoon","감사팀이요? …네, 보고서 원자료는 저희 팀이 만들었어요.","evasive"],
+      ["me","보고서의 40%는 어떤 범위를 집계한 겁니까?"],
+      ["yoon","해온 산단의 Scope 1·2요. 저희가 집계하는 건 거기까지예요. 그룹 전체 40%라는 숫자는… 저희가 만든 적이 없어요.","pressed"],
+      ["me","기준연도가 2019년에서 2022년으로 바뀐 이유는요?"],
+      ["yoon","본부 요청이었어요. 산단 확장을 반영한다고 했고요. 그 이상은… 저도 몰라요.","evasive"],
+      ["han","거짓말을 하는 것 같지는 않아. 다만 그녀가 아는 범위가 거기까지인 거지. 진술은 증거 파일에 기록했어.","calm"]]);
+    return;
+  }
+  S.ev.push(id); SFX.page();
+  const msg = {E8:"그룹 전체로는 6%… 40%와는 거리가 멀어.",E11:"해온시는 기업 수치를 그대로 옮겨 적었네. 독자적인 측정은 아니야.",E5:"1년 전엔 기준연도가 2019년이었고, 그땐 배출량이 ‘증가’였어. 그런데 기준이 바뀐 것 자체가 잘못이라고 할 수 있을까?",E6:"재생에너지의 69%가 인증서 구매야. 인증서 구매 자체는 국제 기준이 인정하는 방식이긴 해.",E7:"산단이 실제로 받는 전기의 79%가 일반 전력망이야. ‘재생에너지로 가동’이라는 말과는 다르지.",E10:"사고 당일 아침 7시간 기록이 비어 있어. 이번 청문회 의제는 아니지만… 마음에 걸리네."}[id];
+  say([["han",msg,"calm"]]);
+}
+function startHearing(){
+  S.scene="hearing"; S.stage="T1"; S.sel=null; S.kexpr="calm";
+  say([["nar","국회 특별청문회장. 카메라 플래시가 터진다."],
+    ["chair","지금부터 해온 산업단지 사고 관련 특별청문회를 시작하겠습니다. 증인, 탄소 감축 성과에 대해 진술해 주십시오.","calm"],
+    ["kang","태림그룹은 기준 연도 대비 탄소배출량을 40% 줄였습니다. 이 수치는 외부 전문기관의 검증을 거쳤습니다. 따라서 당사는 환경 성과를 정확하게 공개했습니다.","smile"],
+    ["han","증언에서 의문을 제기할 구절을 고르고, 맞는 증거를 제시해. 문장이 사실이어도 그 문장이 무엇을 포함하는지는 별개야.","calm"],
+    ["han","틀린 증거를 내면 증인이 방어를 굳혀. 그땐 추가 질문으로 흔들면 돼. 한 번 틀렸다고 끝나지 않아.","calm"]]);
+}
+function r4pick(id){
+  const o=R4.find(x=>x.id===id); S.r4tried=S.r4tried||[]; S.r4tried.push(id);
+  const items=[["me",o.t]];
+  if(o.ok){
+    S.st.r4=id; SFX.hit();
+    items.push(()=>stamp("논파","good"));
+    items.push(o.k);
+    items.push(["han",o.why,"calm"]);
+    if(id==="D") items.push(["han","녹색채권 일정… 처음 나온 단서야. 다음 챕터에서 이 회의를 파고들어야 해.","calm"]);
+    else if(has("E4a")) items.push(["han","기준연도 분석도 있었는데, 그건 결론에서 써먹자.","calm"]);
+    items.push(()=>{S.scene="r5";});
+    items.push(["chair","조사관, 위원회에 제출할 판단을 정리해 주십시오.","calm"]);
+  } else {
+    S.st.r4w++; S.cred=Math.max(10,S.cred-15); SFX.bad();
+    items.push(()=>stamp("반격","bad"));
+    items.push(o.k); items.push(["han",o.why+" 다른 질의로 다시 해 봐.","pressed"]); items.push(lowCred);
+  }
+  say(items);
+}
+function r5claim(id){
+  const c=R5C.find(x=>x.id===id);
+  if(c.ok){ S.r5.claim=id; S.r5.done.claim=true; S.r5.badClaim=null; SFX.page(); render(); }
+  else { S.r5.badClaim=id; S.st.r5w++; S.cred=Math.max(10,S.cred-10); SFX.bad(); say([["han",c.why,"calm"]]); }
+}
+function r5ev(id){
+  if(R5OK[id]){ S.r5.ev=id; S.r5.done.ev=true; S.r5.badEv=null; SFX.page();
+    if(R5OK[id]==="best") say([["han","정부 명세서는 그룹 전체를 직접 보여 주는 자료야. 가장 강한 근거지.","smile"]]); else render(); }
+  else { S.r5.badEv=id; S.st.r5w++; S.cred=Math.max(10,S.cred-10); SFX.bad();
+    const why = id==="E3"?"홍보 자막은 반박할 주장 그 자체야. 근거가 될 수 없어.": id==="E4a"?"기준연도 분석은 강력하지만, 지금 반박하는 건 ‘그룹 전체’라는 범위 문제야. 범위를 보여 주는 증거가 필요해.": id==="E4r"?"원자료만으로는 그룹 전체에 대해 말할 수 없어.":"이 증거는 ‘그룹 전체 40%’라는 주장과 직접 연결되지 않아.";
+    say([["han",why,"calm"]]); }
+}
+function r5end(id){
+  const e=R5E.find(x=>x.id===id); S.st.concl=id; S.st.end=e.end;
+  const items=[["me",`위원회에 보고합니다. ${e.t}`]];
+  if(id==="w"||id==="x"){ SFX.hit(); items.push(()=>stamp("판단 채택","good")); items.push(["chair","증거가 말하는 범위 안에서 정리된 판단입니다. 위원회 기록에 남기겠습니다.","calm"]); items.push(["kang","…홍보 문구는 정정하겠습니다.","pressed"]); }
+  if(id==="y"){ SFX.bad(); items.push(()=>stamp("과잉 결론","bad")); items.push(["kang","산단의 감축은 검증된 사실입니다. 조사관의 결론은 증거를 넘어섰습니다.","angry"]); items.push(["chair","…증인의 이의를 기록하겠습니다.","calm"]); items.push(["han","과장을 밝히려다 우리가 과장을 했어. 증거가 말하지 않는 것까지 말해 버린 거야.","pressed"]); }
+  if(id==="z"){ SFX.soft(); items.push(()=>stamp("면죄부","soft")); items.push(["kang","감사합니다. 저희는 앞으로도 투명하게 공개하겠습니다.","smile"]); items.push(["han","검증받은 건 산단 수치였어. 홍보는 검증받은 적이 없고.","pressed"]); }
+  items.push(()=>{S.scene="result";});
+  say(items);
+}
+
+render();
+</script>
+</body>
+</html>
