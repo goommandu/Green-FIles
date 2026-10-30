@@ -6,7 +6,7 @@
 <title>GREEN FILE 녹색의 증언</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
 <style>
 /* 레이아웃: 상단 상태바 + 장면 영역 + 하단 대화창. 조사 모드는 3열(장소/자료/수첩), 청문회는 증인석/증언/조사관석 */
 :root{
@@ -342,6 +342,116 @@ main::-webkit-scrollbar-thumb{background:#243449;border-radius:6px}
 @media (prefers-reduced-motion: reduce){
   .title h1,.title blockquote,.title p,.dlg-in,.dlg .nx,.modal,.sheet,.title .file::before,.testi h3::before{animation:none!important}
 }
+
+/* ===== 청문회 · 학급재판풍 연출 v3 ===== */
+body.trial{--tr-red:#e8233b;--tr-red2:#8d0f1f;--tr-yel:#ffd23f;--tr-ink:#0a0a0c;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 46px, rgba(160,18,34,.55) 46px 52px, transparent 52px 70px, rgba(160,18,34,.25) 70px 73px, transparent 73px 120px),
+    radial-gradient(circle at 50% 40%, #2a070c 0%, #0b0204 70%);
+}
+body.trial #app::before{background:radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.4px) 0 0/6px 6px;mix-blend-mode:normal;opacity:.5}
+body.trial main::after{content:"特別聽聞會   SPECIAL HEARING   特別聽聞會   SPECIAL HEARING   特別聽聞會   SPECIAL HEARING   特別聽聞會   SPECIAL HEARING";
+  position:fixed;left:0;top:38%;white-space:nowrap;pointer-events:none;z-index:0;
+  font-family:"Black Han Sans",var(--display);font-size:clamp(60px,9vw,120px);letter-spacing:.04em;font-style:italic;
+  color:transparent;-webkit-text-stroke:2px rgba(232,35,59,.42);animation:marq 28s linear infinite}
+@keyframes marq{from{transform:translateX(0) skewX(-8deg)}to{transform:translateX(-50%) skewX(-8deg)}}
+body.trial .scene{position:relative;z-index:2}
+body.trial .scene::before{content:"CASE 01";display:block;width:max-content;margin:0 0 14px 4px;
+  font-family:"Black Han Sans",var(--display);font-size:46px;line-height:1;font-style:italic;color:#fff;
+  padding:6px 26px 6px 18px;background:var(--tr-ink);border:3px solid #fff;transform:rotate(-4deg) skewX(-10deg);
+  box-shadow:8px 8px 0 var(--tr-red)}
+
+/* 상단바 */
+body.trial .top{background:linear-gradient(90deg,#0a0a0c 60%,#3a0710);border-bottom:3px solid var(--tr-red);box-shadow:0 6px 0 rgba(0,0,0,.6)}
+body.trial .brand b{background:none;color:var(--tr-red);-webkit-text-fill-color:var(--tr-red)}
+body.trial .meter{border:2px solid #fff;border-radius:0;transform:skewX(-20deg)}
+body.trial .meter span{background:linear-gradient(90deg,#ff6a3d,var(--tr-red));box-shadow:none}
+body.trial .tbtn{border-radius:0;transform:skewX(-12deg);background:#111;border:2px solid #fff}
+body.trial .tbtn:hover{background:var(--tr-red)}
+
+/* 증인석 */
+body.trial .stand{border:none;border-radius:0;background:
+   radial-gradient(rgba(0,0,0,.35) 1.2px, transparent 1.6px) 0 0/7px 7px,
+   linear-gradient(160deg,var(--tr-red),var(--tr-red2));
+  clip-path:polygon(6% 0,100% 0,94% 100%,0 100%);padding:20px 26px;box-shadow:none;transform:rotate(-1.5deg)}
+body.trial .stand .por svg{border:4px solid #fff;border-radius:0;box-shadow:6px 6px 0 #000;transform:rotate(2deg)}
+body.trial .stand .por svg rect:first-child{opacity:.35}
+body.trial .stand .nm{font-family:"Black Han Sans",var(--display);font-size:30px;line-height:1;background:#fff;color:#000;padding:6px 16px;transform:skewX(-12deg);box-shadow:5px 5px 0 #000}
+body.trial .stand .rl{color:#fff;font-weight:700;background:#000;padding:2px 10px;transform:skewX(-12deg)}
+body.trial .claims .h,body.trial .stand .foot{color:#ffe1e4}
+body.trial .claim{background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.4);border-radius:0;color:#fff;transform:skewX(-6deg)}
+body.trial .claim .sh{color:var(--tr-yel)}
+body.trial .claim.broken{border-color:var(--tr-yel);color:var(--tr-yel)}
+
+/* 증언 패널 */
+body.trial .testi,body.trial .round{background:rgba(8,8,10,.92);border:none;border-radius:0;
+  clip-path:polygon(0 0,97% 0,100% 6%,100% 100%,3% 100%,0 94%);box-shadow:none;padding:22px 26px;
+  border-left:8px solid var(--tr-red)}
+body.trial .testi h3,body.trial .round h3{font-family:"Black Han Sans",var(--display);font-weight:400;font-size:26px;font-style:italic;
+  width:max-content;max-width:100%;background:#fff;color:#000;padding:4px 18px;transform:skewX(-12deg);box-shadow:6px 6px 0 var(--tr-red)}
+body.trial .testi h3::before{background:var(--tr-red)}
+body.trial .testi .sub{color:#c9c9cf}
+body.trial .stmt{font-family:var(--body);font-weight:600;font-size:clamp(18px,2.3vw,23px);color:#fff;border-bottom:1px dashed rgba(255,255,255,.12);border-radius:0}
+body.trial .stmt .no{font-family:"Black Han Sans",var(--display);font-size:20px;color:var(--tr-red);font-style:italic}
+body.trial .ph{color:#ff9f1c;border-bottom:none;font-weight:800;text-shadow:0 0 10px rgba(255,159,28,.75),0 0 2px #ff9f1c;animation:weak 1.6s ease-in-out infinite}
+@keyframes weak{50%{text-shadow:0 0 18px rgba(255,159,28,1),0 0 4px #ffd23f}}
+body.trial .ph:hover{background:rgba(255,159,28,.15)}
+body.trial .ph.shield{color:#7ec8ff;text-shadow:0 0 10px rgba(126,200,255,.7)}
+body.trial .ph.sel{background:var(--tr-yel);color:#000;text-shadow:none;animation:none;padding:0 6px;transform:skewX(-10deg);display:inline-block;box-shadow:4px 4px 0 var(--tr-red)}
+body.trial .ph.dead{color:#666;text-shadow:none;animation:none;text-decoration:line-through 3px var(--tr-red)}
+body.trial .def{background:rgba(232,35,59,.12);border-left-color:var(--tr-red);color:#ffb3bc;border-radius:0}
+body.trial .bar{border-top:2px solid rgba(255,255,255,.15)}
+body.trial .bar .hint{color:#ddd}
+body.trial .act-btn{border-radius:0;transform:skewX(-14deg);border:3px solid #fff;background:var(--tr-red);color:#fff;
+  font-family:"Black Han Sans",var(--display);font-weight:400;font-size:19px;padding:8px 22px;box-shadow:5px 5px 0 #000}
+body.trial .act-btn.q{background:#111;color:var(--tr-yel);border-color:var(--tr-yel)}
+body.trial .act-btn:hover:not(:disabled){background:#fff;color:var(--tr-red);transform:skewX(-14deg) translateY(-2px)}
+body.trial .act-btn.q:hover:not(:disabled){background:var(--tr-yel);color:#000}
+
+/* 라운드 4·5 선택지 */
+body.trial .opt{border-radius:0;background:#141418;border:2px solid #333;transform:skewX(-4deg);color:#fff}
+body.trial .opt .l{font-family:"Black Han Sans",var(--display);color:var(--tr-red);font-size:20px}
+body.trial .opt:hover:not(:disabled){border-color:var(--tr-red);background:#22070c;transform:skewX(-4deg) translateX(4px)}
+body.trial .slot .opt.on{border-color:var(--tr-yel);background:#2a2208}
+body.trial .slot .k{color:var(--tr-red);font-family:"Black Han Sans",var(--display);font-size:15px}
+body.trial .round .stmt .no{color:var(--tr-yel)}
+
+/* 대화창 */
+body.trial .dlg{background:linear-gradient(180deg,rgba(0,0,0,.82),#000);border-top:none;backdrop-filter:none;
+  clip-path:polygon(0 18px,100% 0,100% 100%,0 100%);padding-top:18px}
+body.trial .dlg::before{top:0;height:4px;background:#fff;transform:skewY(-.9deg);transform-origin:left}
+body.trial .dlg .who{display:inline-block;width:max-content;font-family:"Black Han Sans",var(--display);font-weight:400;font-size:22px;
+  background:#fff;color:#000 !important;padding:2px 16px;transform:skewX(-12deg);box-shadow:4px 4px 0 var(--tr-red);margin-bottom:6px}
+body.trial .dlg .who small{color:#555;font-family:var(--body);font-size:12px}
+body.trial .dlg .txt{font-size:19px;font-weight:600;color:#fff}
+body.trial .dlg .txt b{color:var(--tr-yel)}
+body.trial .dlg .txt.narr{color:#bbb}
+body.trial .dlg .nx{border-radius:0;transform:skewX(-14deg);background:var(--tr-red);color:#fff;border:2px solid #fff;animation:none;box-shadow:4px 4px 0 #333}
+body.trial .dlg .por svg{border:3px solid #fff;border-radius:0}
+
+/* 판정 연출 */
+body.trial .stamp div{font-family:"Black Han Sans",var(--display);font-weight:400;font-style:italic;border:none;
+  padding:10px 46px;transform:rotate(-8deg) skewX(-12deg);animation:trst .95s ease-out forwards;
+  -webkit-text-stroke:3px #000;paint-order:stroke fill;box-shadow:0 0 0 6px #fff,14px 14px 0 6px #000}
+body.trial .stamp.good div{background:var(--tr-red);color:#fff}
+body.trial .stamp.bad div{background:#000;color:var(--tr-red);box-shadow:0 0 0 6px var(--tr-red),14px 14px 0 6px #000}
+body.trial .stamp.soft div{background:var(--tr-yel);color:#000;-webkit-text-stroke:0}
+body.trial .stamp::before{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,.14) 0 4deg, transparent 4deg 12deg);animation:fade .95s ease-out reverse forwards}
+@keyframes trst{0%{transform:rotate(-8deg) skewX(-12deg) scale(2.4);opacity:0}18%{transform:rotate(-8deg) skewX(-12deg) scale(.94);opacity:1}26%{transform:rotate(-8deg) skewX(-12deg) scale(1)}82%{opacity:1}100%{opacity:0;transform:rotate(-8deg) skewX(-12deg) scale(1.05)}}
+
+/* 증거 모달 */
+body.trial .sheet{border-radius:0;border:3px solid #fff;background:#0c0c0f;box-shadow:12px 12px 0 var(--tr-red)}
+body.trial .sheet header{background:var(--tr-red);border-bottom:3px solid #fff}
+body.trial .sheet header h3{font-family:"Black Han Sans",var(--display);font-weight:400;font-size:20px;color:#fff;font-style:italic}
+body.trial .sheet .x{border-radius:0;border:2px solid #fff;background:#000}
+body.trial .evi{border-radius:0;background:#16161b}
+body.trial .evi.on{border-color:var(--tr-yel);background:linear-gradient(90deg,rgba(255,210,63,.18),transparent)}
+body.trial .evd .primary{border-radius:0;transform:skewX(-12deg);background:var(--tr-red);color:#fff;border:3px solid #fff;box-shadow:5px 5px 0 #000;font-family:"Black Han Sans",var(--display);font-weight:400}
+body.trial .qbtn{border-radius:0;background:#16161b;transform:skewX(-4deg)}
+body.trial .qbtn:hover:not(:disabled){border-color:var(--tr-yel)}
+
+@media (max-width:860px){body.trial .stand{clip-path:none;transform:none}body.trial .scene::before{font-size:34px}}
+@media (prefers-reduced-motion: reduce){body.trial main::after,body.trial .ph{animation:none!important}}
 </style>
 </head>
 <body>
@@ -454,7 +564,7 @@ const SUSPECTS = [
 const TESTI = {
   T1:{title:"증언 1 · 탄소 감축 성과", sub:"검증이 필요한 구절을 고르고 증거를 제시하세요. 목표: ‘40% 감축’과 ‘검증’ 주장의 허점을 드러내기",
     lines:[
-      ["태림그룹은 ",{id:"p_group",t:"태림그룹은"}," ",{id:"p_base",t:"기준 연도 대비"}," 탄소배출량을 ",{id:"p_40",t:"40% 줄였습니다"},"."],
+      [{id:"p_group",t:"태림그룹은"}," ",{id:"p_base",t:"기준 연도 대비"}," 탄소배출량을 ",{id:"p_40",t:"40% 줄였습니다"},"."],
       ["이 수치는 ",{id:"p_ver",t:"외부 전문기관의 검증을 거쳤습니다"},"."],
       ["따라서 당사는 환경 성과를 ",{id:"p_acc",t:"정확하게 공개했습니다"},"."]
     ]},
@@ -649,6 +759,7 @@ function stamp(text, kind="good"){
    RENDER
    ========================================================= */
 function render(){
+  document.body.classList.toggle("trial",["hearing","r4","r5"].includes(S.scene));
   renderTop();
   const sc=document.getElementById('scene');
   const f = {title:vTitle, invest:vInvest, foren:vForen, hearing:vHearing, r4:vR4, r5:vR5, result:vResult}[S.scene];
@@ -785,7 +896,7 @@ function vHearing(){
   }).join("")}</span></div>`).join("");
   const defs=S.defl[S.stage].map(d=>`<div class="def">방어 논리 강화 · ${d}</div>`).join("");
   const claims=Object.entries(CLAIMS).filter(([k,c])=>c.stage===S.stage).map(([k,c])=>`<div class="claim ${S.br[k]?"broken":""}"><span>${c.t}${c.opt?" (선택)":""}</span><span class="sh">${S.br[k]?"":("■".repeat(2+S.sh[k]))}</span></div>`).join("");
-  const selTxt = S.sel? `선택한 구절: <b style="color:var(--teal)">‘${findPh(S.sel).t}’</b> · 어떤 증거로 지적하시겠습니까?` : "증언에서 의문을 제기할 구절(점선)을 먼저 고르세요. 주황 점선은 증인의 방어가 강화된 구절입니다.";
+  const selTxt = S.sel? `선택한 구절: <b style="color:var(--teal)">‘${findPh(S.sel).t}’</b> · 어떤 증거로 지적하시겠습니까?` : "증언에서 의문을 제기할 구절(빛나는 글자)을 먼저 고르세요. 파란 구절은 증인의 방어가 강화된 구절입니다.";
   return `<div class="hear">
     <div class="stand">${portrait("kang",S.kexpr||"calm",130)}<span class="nm">강도윤</span><span class="rl">태림그룹 지속가능경영본부장</span>
       <div class="claims"><span class="h" style="text-align:left">쟁점 방어선</span>${claims}</div>
